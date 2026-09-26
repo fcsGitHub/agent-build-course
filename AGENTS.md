@@ -3,7 +3,7 @@
 ## 项目身份
 
 AgentGlass：Agent 原理可观测实验室。设计基线：`doc/AgentGlass_Agent教学软件_设计方案与开发计划_v1.1.md`。
-当前实现范围：R5（真实模型调用、真实工具、事件账本、受控代码编辑与隔离执行、回放、流程图断点、课程 L00—L45 共 46 门，阶段 IX 为前沿与 RSI：L42 前沿全景 / L43 上下文工程 / L44 DeepResearch 多源研究 / L45 有界 RSI 循环）。
+当前实现范围：R6（真实模型调用、真实工具、事件账本、受控代码编辑与隔离执行、回放、流程图断点、课程 L00—L45 共 46 门，阶段 IX 为前沿与 RSI：L42 前沿全景 / L43 上下文工程 / L44 DeepResearch 多源研究 / L45 有界 RSI 循环；R6：子 agent 全链可观测（worker 模型事件带 workerId）、对话区多 agent 通信输出（委派/移交/结果/MCP/A2A/技能卡 + worker 回合 + Σ 合并输出）、上下文轮间对比（⇄ 上一轮，新增/移除高亮）、框图按 worker 精确路由信息包）。
 
 ## 硬约束（违反即缺陷）
 
@@ -17,7 +17,7 @@ AgentGlass：Agent 原理可观测实验室。设计基线：`doc/AgentGlass_Age
 
 ```bash
 pnpm typecheck          # 全仓 strict
-pnpm test               # 全部测试（tests/ 下 41 个文件 206 项 + 2 个显式跳过）
+pnpm test               # 全部测试（tests/ 下 42 个文件 213 项 + 2 个显式跳过）
 pnpm verify:lessons     # 课程发布 linter
 pnpm verify:source-bindings
 pnpm verify:trace-bundles

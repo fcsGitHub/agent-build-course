@@ -680,3 +680,89 @@ a.btn-link:hover { border-color: var(--accent); color: var(--accent); }
 .ctx-excluded-id { color: var(--muted); }
 .ctx-excluded-tokens { font-family: var(--mono); font-size: 11px; flex: none; }
 .ctx-excluded-reason { color: var(--warn-text); flex: 1; min-width: 160px; }
+
+/* ============================================================
+   R6 可视化增强：多 agent 通信卡 / worker 回合 / 流式统计 /
+   上下文轮间对比 / 信息流动画补充
+   ============================================================ */
+
+/* ── agent 通信活动卡（委派/移交/结果回收/MCP/A2A/技能） ── */
+.act-row {
+  display: flex; align-items: baseline; gap: 8px;
+  margin: 2px 0 2px 6px; padding: 4px 10px;
+  border-left: 3px solid var(--border-strong);
+  background: #fbfcfe; border-radius: 0 8px 8px 0;
+  font-size: 12px; color: var(--text-soft);
+  animation: bubbleIn 0.25s var(--ease);
+  flex-wrap: wrap;
+}
+.act-glyph { font-size: 12px; flex: none; width: 14px; text-align: center; }
+.act-label { font-weight: 700; font-size: 11px; letter-spacing: 0.02em; flex: none; }
+.act-detail { min-width: 0; word-break: break-word; }
+.act-row.act-delegate { border-left-color: var(--c-agent); background: #fdf6fa; }
+.act-row.act-delegate .act-label { color: #a03c85; }
+.act-row.act-handoff { border-left-color: var(--violet); background: #f8f5fe; }
+.act-row.act-handoff .act-label { color: #5b3ea8; }
+.act-row.act-result { border-left-color: var(--ok); background: #f4fbf6; }
+.act-row.act-result .act-label { color: var(--ok); }
+.act-row.act-warn { border-left-color: var(--warn-border); background: var(--warn-bg); }
+.act-row.act-warn .act-label { color: var(--warn-text); }
+.act-row.act-mcp { border-left-color: #0e7f8c; background: #f2fbfc; }
+.act-row.act-mcp .act-label { color: #0e7f8c; }
+.act-row.act-a2a { border-left-color: #b0621f; background: #fdf8f2; }
+.act-row.act-a2a .act-label { color: #b0621f; }
+.act-row.act-skill { border-left-color: var(--c-special); background: #fffdf4; }
+.act-row.act-skill .act-label { color: #8f6400; }
+
+/* ── worker 回合（多 agent）：左轨与气泡的子 agent 皮肤 ── */
+.turn-dot.worker {
+  background: #fdf0f7; color: #a03c85; border-color: rgba(192, 86, 160, 0.4);
+}
+.turn-dot.worker.live {
+  background: #fbe3f1; color: #8e2f6f;
+  animation: livePulse 1.4s ease-in-out infinite;
+}
+.turn-dot.merge { background: #eef7f0; color: var(--ok); border-color: rgba(30, 142, 62, 0.35); }
+.bubble.agent.worker { background: #fdf8fb; border-color: rgba(192, 86, 160, 0.28); border-bottom-left-radius: 4px; }
+.avatar.worker { background: #fbe3f1; color: #8e2f6f; border-color: rgba(192, 86, 160, 0.4) !important; }
+
+/* ── 流式统计（生成中计时 + 片段数） ── */
+.turn-meta.stream-meta {
+  color: var(--accent); font-weight: 600;
+  background: var(--accent-soft); border-radius: 999px; padding: 1px 9px;
+}
+@keyframes streamMetaPulse { 50% { opacity: 0.6; } }
+.turn-meta.stream-meta { animation: streamMetaPulse 1.6s ease-in-out infinite; }
+
+/* ── 上下文轮间对比 ── */
+.ctx-diff-added { border-color: rgba(30, 142, 62, 0.55) !important; box-shadow: 0 0 0 3px rgba(30, 142, 62, 0.07); }
+.ctx-diff-badge {
+  font-size: 10.5px; font-weight: 700; padding: 0 8px; border-radius: 999px;
+  background: var(--ok-soft); color: var(--ok); flex: none;
+}
+.ctx-diff-summary { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 2px 4px; }
+.ctx-diff-chip {
+  font-family: var(--mono); font-size: 11px; font-weight: 700;
+  padding: 1px 9px; border-radius: 999px; flex: none;
+}
+.ctx-diff-chip.add { background: var(--ok-soft); color: var(--ok); }
+.ctx-diff-chip.keep { background: #eef1f6; color: var(--text-soft); }
+.ctx-diff-chip.del { background: var(--danger-soft); color: var(--danger); }
+button.link.diff-on { color: var(--ok); font-weight: 700; }
+.ctx-diff-removed {
+  border: 1px dashed rgba(200, 56, 44, 0.4); border-radius: var(--radius-m);
+  background: #fef8f7; padding: 8px 12px;
+}
+.ctx-diff-removed-row {
+  display: flex; gap: 8px; align-items: baseline; padding: 3px 0;
+  font-size: 12px; opacity: 0.85;
+}
+.ctx-diff-removed-text {
+  color: var(--muted); text-decoration: line-through;
+  text-decoration-color: rgba(200, 56, 44, 0.55);
+  min-width: 0; word-break: break-word;
+}
+.call-chip.worker .call-chip-no { color: #a03c85; }
+
+/* ── 入场动画统一：回合/活动/工具卡 ── */
+.tool-row { animation: bubbleIn 0.22s var(--ease); }

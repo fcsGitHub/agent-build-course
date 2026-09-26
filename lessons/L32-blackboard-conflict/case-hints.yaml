@@ -3,3 +3,8 @@ hints:
     text: 请两位 worker 分别总结 AG-2048 的要点并写入黑板。
     observe:
       - agent.result_received
+  - id: L32-conflict-watch
+    text: 请两位 worker 对「AG-2048 最重要的维护项」给出各自结论并写入同一黑板键——我要看冲突保留两版本的合并卡。
+    observe:
+      - agent.result_received
+      - agent.delegated

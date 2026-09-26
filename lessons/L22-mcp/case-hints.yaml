@@ -4,3 +4,13 @@ hints:
     observe:
       - mcp.protocol_event
       - tool.call_completed
+  - id: L22-handshake
+    text: 请先用一句话说明你连接的 MCP server 提供哪些工具，再查询 AG-2048 的防护等级。
+    observe:
+      - mcp.server_connected
+      - mcp.protocol_event
+  - id: L22-protocol-walk
+    text: 请查询 AG-2048 的保养周期，然后暂停——我要在信息流页签逐条核对 JSON-RPC 协议事件（初始化/工具列表/调用）。
+    observe:
+      - mcp.protocol_event
+      - run.breakpoint_hit

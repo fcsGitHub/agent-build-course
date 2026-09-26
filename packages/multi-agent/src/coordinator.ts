@@ -241,6 +241,146 @@ export class MultiAgentCoordinator {
   }
 
   /** 单个子 agent：独立上下文（任务包文本）、原子预算预留、因果链、取消传播 */
+  /**
+   * 子 agent 模型调用：与主循环同一可观测合同——请求准备（wire 证据）→ 派发 →
+   * 流式 delta（能力支持时）→ 完成/失败。所有事件 summary 携带 workerId，
+   * 前端据此把流式回合归属到对应 worker（多 agent 通信输出）。
+   */
+  private async invokeWorkerModel(
+    spec: RunSpec,
+    input: MultiAgentInput,
+    worker: WorkerDef,
+    taskId: string,
+    messages: unknown[],
+    causeEventIds: string[],
+    signal: AbortSignal,
+  ): Promise<import("@agentglass/contracts").ModelResponse> {
+    const { events, gateway, blobs, modelSnapshot } = this.deps;
+    const stream = modelSnapshot.capabilities.streaming === true;
+    const wireBody = {
+      messages,
+      model: modelSnapshot.modelId,
+      stream,
+      max_tokens: input.budget.maxOutputTokens,
+    };
+    const wireRef = blobs.putJson(wireBody);
+    events.transact(() => {
+      events.append(spec.id, [
+        {
+          type: "model.request_prepared",
+          summary: {
+            workerId: worker.id,
+            taskId,
+            modelId: modelSnapshot.modelId,
+            provider: modelSnapshot.provider,
+            stream,
+            wireCapture: true,
+          },
+          payloadRef: wireRef,
+          causationEventIds: causeEventIds,
+          conceptIds: ["model-request", "multi-agent"],
+        },
+      ]);
+    });
+    events.transact(() => {
+      events.append(spec.id, [
+        {
+          type: "model.request_dispatched",
+          summary: { workerId: worker.id, taskId, attempt: 1 },
+          causationEventIds: causeEventIds,
+          conceptIds: ["model-request", "multi-agent"],
+        },
+      ]);
+    });
+    try {
+      const result = await gateway.invoke(modelSnapshot, messages, {
+        stream,
+        tools: worker.tools.length > 0 ? input.tools.filter((t) => worker.tools.includes(t.name)) : undefined,
+        maxOutputTokens: input.budget.maxOutputTokens,
+        signal,
+      });
+      let response: import("@agentglass/contracts").ModelResponse;
+      if (result.stream) {
+        let batchChars = 0;
+        let batchBuffer = "";
+        for await (const batch of result.stream.deltas) {
+          for (const d of batch) {
+            if (d.kind === "text") {
+              batchBuffer += d.text;
+              batchChars += d.text.length;
+            }
+          }
+          if (batchChars >= 64) {
+            const payloadRef = blobs.putText(batchBuffer);
+            events.transact(() => {
+              events.append(spec.id, [
+                {
+                  type: "model.delta_batch",
+                  summary: { workerId: worker.id, taskId, chars: batchChars },
+                  payloadRef,
+                  causationEventIds: causeEventIds,
+                  conceptIds: ["streaming", "multi-agent"],
+                },
+              ]);
+            });
+            batchChars = 0;
+            batchBuffer = "";
+          }
+        }
+        response = await result.stream.final;
+      } else {
+        if (!result.response) throw new Error("PROVIDER_RETURNED_NEITHER_STREAM_NOR_RESPONSE");
+        response = result.response;
+      }
+      if (response.finishReason === "length") {
+        events.transact(() => {
+          events.append(spec.id, [
+            {
+              type: "model.response_truncated",
+              summary: { workerId: worker.id, taskId, finishReason: "length" },
+              causationEventIds: causeEventIds,
+              conceptIds: ["model-response", "multi-agent"],
+            },
+          ]);
+        });
+      }
+      events.transact(() => {
+        events.append(spec.id, [
+          {
+            type: "model.response_completed",
+            summary: {
+              workerId: worker.id,
+              taskId,
+              finishReason: response.finishReason,
+              toolRequestCount: response.toolRequests.length,
+              usage: {
+                inputTokens: response.usage.inputTokens ?? null,
+                outputTokens: response.usage.outputTokens ?? null,
+              },
+              messageChars: response.messageText.length,
+            },
+            payloadRef: blobs.putText(response.messageText || response.rawText),
+            causationEventIds: causeEventIds,
+            conceptIds: ["model-response", "multi-agent"],
+          },
+        ]);
+      });
+      return response;
+    } catch (err) {
+      events.transact(() => {
+        events.append(spec.id, [
+          {
+            type: "model.request_failed",
+            summary: { workerId: worker.id, taskId, error: String(err).slice(0, 300) },
+            causationEventIds: causeEventIds,
+            conceptIds: ["model-request", "multi-agent"],
+          },
+        ]);
+      });
+      throw err;
+    }
+  }
+
   private async runWorker(
     spec: RunSpec,
     budgetId: string,
@@ -250,7 +390,7 @@ export class MultiAgentCoordinator {
     parentSignal: AbortSignal,
     _outcomes: WorkerOutcome[],
   ): Promise<{ outcome: WorkerOutcome; text: string; noteWrite?: { taskId: string; content: string } }> {
-    const { events, budget, gateway } = this.deps;
+    const { events, budget } = this.deps;
     const taskId = `task_${randomUUID().replace(/-/g, "").slice(0, 10)}`;
     const childAbort = new AbortController();
     // 取消传播：父取消 → 子取消
@@ -297,16 +437,36 @@ export class MultiAgentCoordinator {
         worker,
         taskText,
       );
-      const body = this.deps.blobs.getJson<{ messages?: unknown[] }>(compiled.messageBodyRef.id);
-      const result = await gateway.invoke(this.deps.modelSnapshot, body.messages ?? [], {
-        stream: false,
-        tools: worker.tools.length > 0 ? input.tools.filter((t) => worker.tools.includes(t.name)) : undefined,
-        maxOutputTokens: input.budget.maxOutputTokens,
-        signal: childAbort.signal,
+      // 子 agent 上下文隔离的证据：编译结果入账本（前端上下文检视器可逐 worker 检视）
+      events.transact(() => {
+        events.append(spec.id, [
+          {
+            type: "context.compiled",
+            summary: {
+              workerId: worker.id,
+              taskId,
+              compiledContextId: compiled.callId,
+              included: compiled.items.filter((i) => i.selected).length,
+              excluded: compiled.items.filter((i) => !i.selected).length,
+              estimatedInputTokens: compiled.estimatedInputTokens,
+              isolation: "worker-only（不见父对话与其他 worker 输出）",
+            },
+            payloadRef: compiled.messageBodyRef,
+            causationEventIds: causeIds,
+            conceptIds: ["context-compilation", "multi-agent"],
+          },
+        ]);
       });
-      let response = result.response;
-      if (result.stream) response = await result.stream.final;
-      if (!response) throw new Error("WORKER_NO_RESPONSE");
+      const body = this.deps.blobs.getJson<{ messages?: unknown[] }>(compiled.messageBodyRef.id);
+      const response = await this.invokeWorkerModel(
+        spec,
+        input,
+        worker,
+        taskId,
+        body.messages ?? [],
+        causeIds,
+        childAbort.signal,
+      );
       budget.settleUse(budgetId, "model_call", 1, {
         inputTokens: response.usage.inputTokens,
         outputTokens: response.usage.outputTokens,

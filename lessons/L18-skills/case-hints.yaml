@@ -2,4 +2,15 @@ hints:
   - id: L18-load
     text: 请加载 evidence-summary-skill 技能，然后总结 AG-2048 的保修政策。
     observe:
+      - skill.loaded
       - tool.call_completed
+  - id: L18-two-step
+    text: 先加载 evidence-summary-skill 技能，再用它的规则对比 AG-2048 与备件的保修差异，给出带证据的结论。
+    observe:
+      - skill.loaded
+      - model.response_completed
+  - id: L18-observe-layers
+    text: 请触发技能加载后暂停，让我在「上下文」页签看技能正文进入模型视野的过程（⇄ 与上一轮对比）。
+    observe:
+      - skill.loaded
+      - context.compiled

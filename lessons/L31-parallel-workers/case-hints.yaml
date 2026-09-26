@@ -4,3 +4,13 @@ hints:
     observe:
       - agent.delegated
       - agent.result_received
+  - id: L31-parallel-watch
+    text: 请三个 worker 并行各自总结 AG-2048 的一个方面——我要在框图上同时看到三条 fan 边的信息包流动。
+    observe:
+      - agent.delegated
+      - model.delta_batch
+  - id: L31-merge-order
+    text: 请并行研究 AG-2048 的规格与保修，然后指出合并输出中每个段落属于哪个 worker（验证按声明顺序合并而非完成顺序）。
+    observe:
+      - agent.result_received
+      - run.completed

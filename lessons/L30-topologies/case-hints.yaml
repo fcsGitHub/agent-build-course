@@ -4,3 +4,14 @@ hints:
     observe:
       - agent.delegated
       - agent.handed_off
+  - id: L30-watch-stream
+    text: 请整理 AG-2048 的安全注意事项——我想在对话区同时看到两个 worker 的流式输出与控制权移交卡。
+    observe:
+      - agent.delegated
+      - agent.handed_off
+      - model.delta_batch
+  - id: L30-isolation-check
+    text: 请总结 AG-2048 的维护要求——完成后我要点开两个 worker 各自的「◉ 上下文」，对比它们的上下文隔离。
+    observe:
+      - context.compiled
+      - agent.handed_off

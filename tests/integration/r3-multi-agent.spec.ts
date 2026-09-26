@@ -179,6 +179,45 @@ describe("T27 多 Agent（L31/L32）", () => {
     expect((bb!.summary as Record<string, unknown>).mergedBy).toBe("conflict-kept-both");
     rmSync(dataDir, { recursive: true, force: true });
   }, 90_000);
+
+  it("worker 可观测链：每个 worker 有带 workerId 的上下文编译/请求派发/流式片段/响应完成", async () => {
+    const { runId } = await runLesson("L31-parallel-workers", "1.0.0", "请全面整理 AG-2048 的要点。");
+    const all = events.readRange(runId, 0, events.maxSeq(runId));
+    const s = (e: { summary: Record<string, unknown> }): string => String(e.summary.workerId ?? "");
+    // ① 每个 worker 一次带 workerId 的 context.compiled（上下文隔离可见）
+    const workerCtx = all.filter((e) => e.type === "context.compiled" && s(e) !== "");
+    expect(workerCtx.length).toBe(3);
+    for (const c of workerCtx) {
+      expect(String((c.summary as Record<string, unknown>).compiledContextId ?? "")).toMatch(/^cc_/);
+      expect((c.summary as Record<string, unknown>).isolation).toContain("worker-only");
+    }
+    // ② 请求准备（wire 证据）与派发都归属 worker
+    const prepared = all.filter((e) => e.type === "model.request_prepared" && s(e) !== "");
+    const dispatched = all.filter((e) => e.type === "model.request_dispatched" && s(e) !== "");
+    expect(prepared.length).toBe(3);
+    expect(dispatched.length).toBe(3);
+    for (const p of prepared) {
+      expect(p.payloadRef).toBeDefined(); // wire 捕获（出站载荷证据）
+      expect((p.summary as Record<string, unknown>).stream).toBe(true); // fake 能力声明流式
+    }
+    // ③ 流式片段：worker 输出经 delta_batch 增量可见（fake 流式文本足够长时至少若干批次）
+    const deltas = all.filter((e) => e.type === "model.delta_batch" && s(e) !== "");
+    expect(deltas.length).toBeGreaterThanOrEqual(3);
+    // ④ 响应完成：全文 blob + 用量，且 workerId 归属
+    const completed = all.filter((e) => e.type === "model.response_completed" && s(e) !== "");
+    expect(completed.length).toBe(3);
+    for (const c of completed) {
+      expect(c.payloadRef).toBeDefined();
+      expect(blobs.getText(c.payloadRef!.id).length).toBeGreaterThan(0);
+    }
+    // ⑤ 事件顺序：worker 的上下文编译先于其响应完成
+    for (const wid of ["w-specs", "w-maintenance", "w-warranty"]) {
+      const ctxSeq = workerCtx.find((e) => s(e) === wid)!.seq;
+      const doneSeq = completed.find((e) => s(e) === wid)!.seq;
+      expect(ctxSeq).toBeLessThan(doneSeq);
+    }
+    rmSync(dataDir, { recursive: true, force: true });
+  }, 90_000);
 });
 
 describe("T26 评测器", () => {

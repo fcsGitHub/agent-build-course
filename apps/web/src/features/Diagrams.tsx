@@ -22,6 +22,8 @@ export interface GNode {
   dashed?: boolean;
   /** 断点目标：边界名（before_model 等）或 node:<graphNodeId>；undefined = 不可断 */
   breakpoint?: string;
+  /** 多 agent：本节点对应的 worker id（事件 summary.workerId 据此精确路由） */
+  agentId?: string;
 }
 
 export interface GEdge {
@@ -125,6 +127,14 @@ export function buildGraph(manifest: LessonManifestDto, events: TraceEvent[]): G
 
   if (profile === "multi_agent" && rt.multi_agent) {
     const ma = rt.multi_agent;
+    // 每个 worker 的真实完成次数（其模型 response_completed 计数）
+    const workerDone = new Map<string, number>();
+    for (const e of events) {
+      if (e.type === "model.response_completed" && typeof e.summary.workerId === "string") {
+        const wid = e.summary.workerId;
+        workerDone.set(wid, (workerDone.get(wid) ?? 0) + 1);
+      }
+    }
     return {
       layout: "fan",
       nodes: [
@@ -134,9 +144,10 @@ export function buildGraph(manifest: LessonManifestDto, events: TraceEvent[]): G
           id: `worker${i}`,
           label: `worker ${w.id}`,
           sub: w.goal.slice(0, 24),
-          count: null,
+          count: workerDone.get(w.id) ?? 0,
           cls: "agent" as NodeCls,
           breakpoint: "before_model",
+          agentId: w.id,
         })),
         {
           id: "merge",
@@ -398,22 +409,28 @@ export function eventTouch(graph: Graph, e: TraceEvent): Touch[] {
   const model = nodeByCls(graph, "model");
   const tool = nodeByCls(graph, "tool");
   const policy = nodeByCls(graph, "policy");
+  const wid = typeof e.summary.workerId === "string" ? e.summary.workerId : undefined;
   const graphNode = (id: string | undefined): string | undefined =>
     id != null && graph.nodes.some((n) => n.id === `gn:${id}`) ? `gn:${id}` : undefined;
   switch (e.type) {
     case "input.accepted":
       return [{ edgeId: edgeInto(graph, io?.id), nodeId: io?.id, cls: "io" }];
     case "context.compiled":
+      if (wid != null) return touchWorker(graph, wid, []);
       return [{ edgeId: edgeInto(graph, ctx?.id), nodeId: ctx?.id, cls: "ctx" }];
     case "model.request_prepared":
     case "model.request_dispatched":
+    case "model.delta_batch":
+      if (wid != null) return touchWorker(graph, wid, []);
       return [{ edgeId: edgeInto(graph, model?.id), nodeId: model?.id, cls: "model" }];
     case "model.response_completed": {
+      if (wid != null) return touchWorker(graph, wid, []);
       const toTool = graph.edges.find((ed) => ed.from === model?.id && ed.to === tool?.id)?.id;
       return [{ edgeId: toTool, nodeId: toTool ? tool?.id : out?.id, cls: toTool ? "tool" : "io" }];
     }
     case "tool.proposed":
     case "mcp.protocol_event":
+    case "mcp.server_connected":
       return [{ edgeId: edgeInto(graph, tool?.id), nodeId: tool?.id, cls: "tool" }];
     case "tool.call_completed":
       return [{ edgeId: edgeInto(graph, policy?.id), nodeId: policy?.id ?? tool?.id, cls: policy ? "policy" : "tool" }];
@@ -430,19 +447,43 @@ export function eventTouch(graph: Graph, e: TraceEvent): Touch[] {
       const last = graph.edges.find((ed) => ed.to === out?.id && ed.kind === "main");
       return last ? [{ edgeId: last.id, nodeId: out?.id, cls: "io" }] : [];
     }
-    case "agent.delegated":
-      return graph.edges
+    case "agent.delegated": {
+      const fallback = graph.edges
         .filter((ed) => ed.kind === "fan")
         .map((ed) => ({ edgeId: ed.id, nodeId: ed.to, cls: "agent" as NodeCls }));
-    case "agent.result_received":
-      return graph.edges
+      return touchWorker(graph, wid, fallback);
+    }
+    case "agent.result_received": {
+      const fallback = graph.edges
         .filter((ed) => ed.kind === "merge")
         .map((ed) => ({ edgeId: ed.id, nodeId: ed.to, cls: "ctx" as NodeCls }));
+      return touchWorkerMerge(graph, wid, fallback);
+    }
+    case "agent.handed_off": {
+      const to = String(e.summary.to ?? "");
+      const fromId = String(e.summary.from ?? "");
+      if (to === "(final)") {
+        const last = graph.edges.find((ed) => ed.to === out?.id && ed.kind === "main");
+        return last ? [{ edgeId: last.id, nodeId: out?.id, cls: "io" }] : [];
+      }
+      const merged: Touch[] = [];
+      const fromNode = graph.nodes.find((n) => n.agentId === fromId);
+      const toNode = graph.nodes.find((n) => n.agentId === to);
+      if (fromNode && toNode) {
+        const hop = graph.edges.find((ed) => ed.kind === "merge" && ed.from === fromNode.id);
+        const fan = graph.edges.find((ed) => ed.kind === "fan" && ed.to === toNode.id);
+        if (hop) merged.push({ edgeId: hop.id, nodeId: fromNode.id, cls: "agent" });
+        if (fan) merged.push({ edgeId: fan.id, nodeId: toNode.id, cls: "agent" });
+      }
+      return merged;
+    }
     case "a2a.agent_connected":
       return graph.edges
         .filter((ed) => ed.kind === "fan")
         .slice(0, 1)
         .map((ed) => ({ edgeId: ed.id, nodeId: ed.to, cls: "agent" as NodeCls }));
+    case "skill.loaded":
+      return [{ nodeId: ctx?.id, cls: "ctx" }];
     case "recursion.node_started":
     case "recursion.node_completed":
       return [{ nodeId: "tree", cls: "agent" }];
@@ -474,6 +515,24 @@ export function eventTouch(graph: Graph, e: TraceEvent): Touch[] {
 function touchById(graph: Graph, id: string, cls: NodeCls): Touch[] {
   const node = graph.nodes.find((n) => n.id === id);
   return node ? [{ edgeId: edgeInto(graph, id), nodeId: id, cls }] : [];
+}
+
+/** 按 worker id 触达其节点与入边（多 agent：委派/流式/结果精确路由到具体子 agent） */
+function touchWorker(graph: Graph, workerId: string | undefined, fallback: Touch[]): Touch[] {
+  if (workerId == null) return fallback;
+  const node = graph.nodes.find((n) => n.agentId === workerId);
+  if (!node) return fallback;
+  const edge = graph.edges.find((e) => e.kind === "fan" && e.to === node.id);
+  return [{ edgeId: edge?.id, nodeId: node.id, cls: "agent" }];
+}
+
+/** 按 worker id 触达其归并边（result_received → 具体 worker 的贡献路径） */
+function touchWorkerMerge(graph: Graph, workerId: string | undefined, fallback: Touch[]): Touch[] {
+  if (workerId == null) return fallback;
+  const node = graph.nodes.find((n) => n.agentId === workerId);
+  if (!node) return fallback;
+  const edge = graph.edges.find((e) => e.kind === "merge" && e.from === node.id);
+  return [{ edgeId: edge?.id, nodeId: edge ? edge.to : node.id, cls: "ctx" }];
 }
 
 /** 最近被触达的节点（架构图脉冲高亮用） */

@@ -357,10 +357,30 @@ export function WorkbenchPage(props: {
     if (st === "awaiting_approval") return "等待你的批准：高影响写入需要确认…";
     if (st === "paused") return null; // 暂停由横幅呈现
     const turns = derived.turns.length;
-    const last = events.at(-1)?.type ?? "";
-    if (last.startsWith("tool.")) return `第 ${Math.max(1, turns)} 轮 · 工具执行中`;
-    if (last.startsWith("model.")) return `第 ${Math.max(1, turns)} 轮 · 模型生成中`;
-    if (last === "context.compiled") return `第 ${turns + 1} 轮 · 组装上下文`;
+    const last = events.at(-1);
+    const lastType = last?.type ?? "";
+    // 多 agent / 协议阶段：按子 agent 与协议事件给出专门提示
+    if (lastType === "agent.delegated") return `委派子任务 → worker「${String(last!.summary.workerId ?? "")}」`;
+    if (lastType === "agent.result_received") {
+      const ok = String(last!.summary.status) === "succeeded";
+      return ok ? `子 agent 结果回收 · worker「${String(last!.summary.workerId ?? "")}」` : "子 agent 失败，继续其余分支…";
+    }
+    if (lastType === "agent.handed_off") return `控制权移交：${String(last!.summary.from)} → ${String(last!.summary.to)}`;
+    if (lastType === "mcp.protocol_event") return `MCP 协议交互 · ${String(last!.summary.method ?? "消息")}`;
+    if (lastType === "a2a.agent_connected") return `A2A 远程 agent 连接 · ${String(last!.summary.agentName ?? "")}`;
+    if (lastType === "skill.loaded") return `技能渐进加载 · ${String(last!.summary.slug ?? "")}`;
+    if (lastType.startsWith("tool.")) {
+      const wid = last!.summary.workerId;
+      return wid ? `worker「${String(wid)}」 · 工具执行中` : `第 ${Math.max(1, turns)} 轮 · 工具执行中`;
+    }
+    if (lastType.startsWith("model.")) {
+      const wid = last!.summary.workerId;
+      return wid ? `worker「${String(wid)}」生成中` : `第 ${Math.max(1, turns)} 轮 · 模型生成中`;
+    }
+    if (lastType === "context.compiled") {
+      const wid = last!.summary.workerId;
+      return wid ? `worker「${String(wid)}」组装上下文（隔离）` : `第 ${turns + 1} 轮 · 组装上下文`;
+    }
     return `运行中（${st}）`;
   }, [runView, events, derived]);
 
@@ -776,8 +796,9 @@ function FlowTab(props: {
     [
       "model.request_prepared", "model.response_completed", "tool.proposed", "tool.call_completed",
       "context.compiled", "policy.stop_decision", "agent.delegated", "agent.result_received",
-      "recursion.node_completed", "graph.node_completed", "approval.requested", "approval.granted",
-      "mcp.protocol_event", "a2a.agent_connected", "tool.denied", "run.breakpoint_hit",
+      "agent.handed_off", "recursion.node_completed", "graph.node_completed", "approval.requested", "approval.granted",
+      "mcp.server_connected", "mcp.protocol_event", "a2a.agent_connected", "skill.loaded",
+      "tool.denied", "run.breakpoint_hit", "candidate.evaluated", "candidate.promoted", "candidate.rejected",
     ].includes(e.type),
   );
   const openPayload = async (e: TraceEvent): Promise<void> => {
@@ -833,14 +854,32 @@ function FlowTab(props: {
 }
 
 function RunPanel(props: { events: TraceEvent[]; runView: RunView | null; derived: RunDerived }) {
-  const { runView, derived } = props;
+  const { runView, derived, events } = props;
   if (!runView) return <p className="muted">尚无运行。</p>;
+  const workerIds = [...new Set(derived.turns.map((t) => t.workerId).filter((w): w is string => w != null))];
+  const delegated = events.filter((e) => e.type === "agent.delegated").length;
+  const results = events.filter((e) => e.type === "agent.result_received").length;
+  const failedResults = events.filter((e) => e.type === "agent.result_received" && String(e.summary.status) !== "succeeded").length;
+  const skills = events.filter((e) => e.type === "skill.loaded");
+  const mcpServers = events.filter((e) => e.type === "mcp.server_connected");
   return (
     <div className="run-meta">
       <p><b>运行 ID</b><br /><code>{runView.run.id}</code></p>
       <p><b>模式</b> {runView.run.mode === "live" ? "LIVE 实时" : runView.run.mode} · <b>状态</b> {runView.run.state}{runView.run.stopReason ? `（${runView.run.stopReason}）` : ""}</p>
       <p><b>模型</b> {runView.model?.provider}/{runView.model?.modelId}{runView.model?.simulated ? "（模拟）" : ""}</p>
       <p><b>回合</b> {derived.turns.length} 次模型调用 · {derived.turns.reduce((n, t) => n + t.tools.length, 0)} 次工具调用</p>
+      {workerIds.length > 0 && (
+        <p>
+          <b>子 agent</b> {workerIds.length} 个（{workerIds.join("、")}） · 委派 {delegated} · 结果回收 {results}
+          {failedResults > 0 ? `（其中 ${failedResults} 个未成功）` : ""}
+        </p>
+      )}
+      {skills.length > 0 && (
+        <p><b>技能加载</b> {skills.length} 次（{[...new Set(skills.map((s) => String(s.summary.slug)))].join("、")}）</p>
+      )}
+      {mcpServers.length > 0 && (
+        <p><b>MCP server</b> {[...new Set(mcpServers.map((s) => String(s.summary.serverId)))].join("、")}</p>
+      )}
       <p><b>用量</b> 输入 {derived.usage.input} tokens / 输出 {derived.usage.output} tokens（费用：未配置价格表，未知）</p>
       <p><b>预算</b> {JSON.stringify(runView.run.budget)}</p>
     </div>
