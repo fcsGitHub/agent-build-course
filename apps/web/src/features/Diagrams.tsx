@@ -607,10 +607,10 @@ export function GraphDiagram(props: {
     >
       <defs>
         <marker id="dg-arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-          <path d="M 0 1 L 9 5 L 0 9 z" fill="#93a3b8" />
+          <path d="M 0 1 L 9 5 L 0 9 z"  />
         </marker>
         <marker id="dg-arrow-accent" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-          <path d="M 0 1 L 9 5 L 0 9 z" fill="#2f6fed" />
+          <path d="M 0 1 L 9 5 L 0 9 z"  />
         </marker>
       </defs>
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api, type LessonCatalogEntry } from "../api";
 
 /** 阶段元数据：与设计文档 §4 的课程地图对应（IX 为前沿扩展阶段） */
@@ -20,13 +20,41 @@ function shortId(id: string): string {
 
 export function LearnPage(props: { onOpenLesson: (id: string) => void }) {
   const [catalog, setCatalog] = useState<LessonCatalogEntry[]>([]);
+  const [query, setQuery] = useState("");
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     void api.catalog().then((r) => setCatalog(r.lessons));
   }, []);
 
-  const stages = [...new Set(catalog.map((c) => c.stage))].sort();
+  const q = query.trim().toLowerCase();
+  const filtered = useMemo(
+    () =>
+      q.length === 0
+        ? catalog
+        : catalog.filter(
+            (c) =>
+              c.id.toLowerCase().includes(q) ||
+              c.title.toLowerCase().includes(q) ||
+              c.summary.toLowerCase().includes(q),
+          ),
+    [catalog, q],
+  );
+  const stages = [...new Set(filtered.map((c) => c.stage))].sort();
   const frontierCount = catalog.filter((c) => c.stage === "IX").length;
+
+  const toggleStage = (stage: string): void => {
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(stage)) next.delete(stage);
+      else next.add(stage);
+      return next;
+    });
+  };
+  const allCollapsed = stages.length > 0 && stages.every((s) => collapsed.has(s));
+  const toggleAll = (): void => {
+    setCollapsed(allCollapsed ? new Set() : new Set(stages));
+  };
 
   return (
     <div className="learn">
@@ -47,13 +75,46 @@ export function LearnPage(props: { onOpenLesson: (id: string) => void }) {
         </p>
       </header>
 
+      <div className="learn-tools">
+        <input
+          data-testid="lesson-search"
+          className="learn-search"
+          type="search"
+          placeholder="搜索课程：编号 / 标题 / 关键词（如 MCP、预算、上下文）…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        {q.length > 0 && (
+          <span className="muted small">
+            命中 {filtered.length} / {catalog.length} 门
+          </span>
+        )}
+        <span className="spacer" />
+        <button className="small-btn" onClick={toggleAll} disabled={stages.length === 0}>
+          {allCollapsed ? "展开全部阶段" : "收起全部阶段"}
+        </button>
+      </div>
+
+      {stages.length === 0 && q.length > 0 && (
+        <p className="muted learn-empty">没有匹配「{query.trim()}」的课程——换个关键词试试（如 工具 / 检索 / 多 agent）。</p>
+      )}
+
       {stages.map((stage) => {
         const meta = STAGE_META[stage] ?? { title: `阶段 ${stage}` };
-        const lessons = catalog.filter((c) => c.stage === stage);
+        const lessons = filtered.filter((c) => c.stage === stage);
         const frontier = stage === "IX";
+        const isCollapsed = collapsed.has(stage);
         return (
           <section key={stage} className={`stage ${frontier ? "stage-frontier" : ""}`}>
             <div className="stage-head">
+              <button
+                className={`stage-fold ${isCollapsed ? "collapsed" : ""}`}
+                title={isCollapsed ? "展开该阶段" : "收起该阶段"}
+                onClick={() => toggleStage(stage)}
+                aria-expanded={!isCollapsed}
+              >
+                {isCollapsed ? "▸" : "▾"}
+              </button>
               <span className="stage-no">{stage}</span>
               <div className="stage-title">
                 <h2>{meta.title}</h2>
@@ -61,18 +122,20 @@ export function LearnPage(props: { onOpenLesson: (id: string) => void }) {
               </div>
               <span className="stage-count muted small">{lessons.length} 门</span>
             </div>
-            <div className="lesson-grid">
-              {lessons.map((c) => (
-                <button key={c.id} className="lesson-card" onClick={() => props.onOpenLesson(c.id)}>
-                  <span className="lesson-id">{shortId(c.id)}</span>
-                  <span className="lesson-title">{c.title}</span>
-                  <span className="lesson-summary">{c.summary}</span>
-                  {c.prerequisites.length > 0 && (
-                    <span className="lesson-prereq muted small">先修 {c.prerequisites.map(shortId).join(" · ")}</span>
-                  )}
-                </button>
-              ))}
-            </div>
+            {!isCollapsed && (
+              <div className="lesson-grid">
+                {lessons.map((c) => (
+                  <button key={c.id} className="lesson-card" onClick={() => props.onOpenLesson(c.id)}>
+                    <span className="lesson-id">{shortId(c.id)}</span>
+                    <span className="lesson-title">{c.title}</span>
+                    <span className="lesson-summary">{c.summary}</span>
+                    {c.prerequisites.length > 0 && (
+                      <span className="lesson-prereq muted small">先修 {c.prerequisites.map(shortId).join(" · ")}</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
           </section>
         );
       })}

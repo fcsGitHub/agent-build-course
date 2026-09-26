@@ -3,11 +3,15 @@
  * 回放只读取事件并经同一 reducer 重建；不调用模型、不执行工具。
  * 框图与实验台同源（Diagrams.tsx）：随游标推进点亮节点与计数，播放时信息包沿边移动；
  * 导入包仅在携带课程清单快照时重建框图（否则如实降级为事件流，不虚构拓扑）。
+ * 控制：速度选择（0.5×—4×）、进度条拖拽、键盘（←/→ 步进、空格 播放/暂停、Home/End 跳转）。
  */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { api, type LessonManifestDto, type TraceEvent } from "../api";
 import { unzipSync, strFromU8 } from "fflate";
 import { buildGraph, DiagramLegend, GraphDiagram, lastTouchedNode, packetsFromEvents } from "./Diagrams";
+
+const SPEEDS = [0.5, 1, 2, 4] as const;
+const BASE_STEP_MS = 250;
 
 export function ReplayPage(props: { runId?: string; onBack: () => void }) {
   const { runId, onBack } = props;
@@ -17,6 +21,19 @@ export function ReplayPage(props: { runId?: string; onBack: () => void }) {
   const [cursor, setCursor] = useState(0);
   const [source, setSource] = useState<string>("");
   const [playing, setPlaying] = useState(false);
+  const [speed, setSpeed] = useState<(typeof SPEEDS)[number]>(1);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const stopPlay = (): void => {
+    if (timerRef.current != null) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setPlaying(false);
+  };
+
+  // 卸载时清理播放计时器
+  useEffect(() => () => stopPlay(), []);
 
   const loadRun = async (id: string): Promise<void> => {
     let cursorSeq = 0;
@@ -76,19 +93,62 @@ export function ReplayPage(props: { runId?: string; onBack: () => void }) {
 
   const current = events[cursor];
   const start = (): void => {
-    if (events.length === 0) return;
+    if (events.length === 0 || playing) return;
     setPlaying(true);
-    const timer = setInterval(() => {
+    const stepMs = Math.max(40, Math.round(BASE_STEP_MS / speed));
+    timerRef.current = setInterval(() => {
       setCursor((c) => {
         if (c >= events.length - 1) {
-          clearInterval(timer);
+          if (timerRef.current != null) clearInterval(timerRef.current);
+          timerRef.current = null;
           setPlaying(false);
           return c;
         }
         return c + 1;
       });
-    }, 250);
+    }, stepMs);
   };
+  const togglePlay = (): void => (playing ? stopPlay() : start());
+
+  // 键盘控制：←/→ 步进、空格 播放/暂停、Home/End 跳转（输入控件聚焦时让位）
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent): void => {
+      const t = e.target as HTMLElement | null;
+      if (t != null && ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName)) return;
+      if (events.length === 0) return;
+      switch (e.key) {
+        case "ArrowLeft":
+          e.preventDefault();
+          stopPlay();
+          setCursor((c) => Math.max(0, c - 1));
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          stopPlay();
+          setCursor((c) => Math.min(events.length - 1, c + 1));
+          break;
+        case " ":
+          e.preventDefault();
+          togglePlay();
+          break;
+        case "Home":
+          e.preventDefault();
+          stopPlay();
+          setCursor(0);
+          break;
+        case "End":
+          e.preventDefault();
+          stopPlay();
+          setCursor(events.length - 1);
+          break;
+        default:
+          break;
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [events.length, playing, speed]);
 
   const visible = useMemo(() => events.slice(0, cursor + 1), [events, cursor]);
 
@@ -118,13 +178,38 @@ export function ReplayPage(props: { runId?: string; onBack: () => void }) {
         </label>
       </div>
       <div className="replay-controls">
-        <button disabled={cursor === 0} onClick={() => setCursor(0)}>⏮ 开头</button>
-        <button disabled={cursor === 0 || playing} onClick={() => setCursor((c) => Math.max(0, c - 1))}>◀ 上一事件</button>
-        <button disabled={playing || events.length === 0} onClick={start}>▶ 播放</button>
-        <button disabled={cursor >= events.length - 1} onClick={() => { setPlaying(false); setCursor((c) => Math.min(events.length - 1, c + 1)); }}>下一事件 ▶</button>
-        <button disabled={events.length === 0} onClick={() => { setPlaying(false); setCursor(events.length - 1); }}>⏭ 跳到末尾</button>
+        <button disabled={cursor === 0} onClick={() => { stopPlay(); setCursor(0); }}>⏮ 开头</button>
+        <button disabled={cursor === 0 || playing} onClick={() => { stopPlay(); setCursor((c) => Math.max(0, c - 1)); }}>◀ 上一事件</button>
+        <button disabled={playing || events.length === 0} onClick={start}>{playing ? "播放中…" : "▶ 播放"}</button>
+        {playing && <button onClick={stopPlay}>⏸ 暂停</button>}
+        <button disabled={cursor >= events.length - 1} onClick={() => { stopPlay(); setCursor((c) => Math.min(events.length - 1, c + 1)); }}>下一事件 ▶</button>
+        <button disabled={events.length === 0} onClick={() => { stopPlay(); setCursor(events.length - 1); }}>⏭ 跳到末尾</button>
+        <label className="speed-label">
+          速度
+          <select data-testid="replay-speed" value={speed} onChange={(e) => setSpeed(Number(e.target.value) as (typeof SPEEDS)[number])}>
+            {SPEEDS.map((s) => (
+              <option key={s} value={s}>{s}×</option>
+            ))}
+          </select>
+        </label>
         <span className="muted">{events.length > 0 ? `${cursor + 1} / ${events.length}` : "无事件"}</span>
+        <span className="muted small">键盘：←/→ 步进 · 空格 播放/暂停 · Home/End 跳转</span>
       </div>
+      {events.length > 0 && (
+        <input
+          data-testid="replay-scrubber"
+          className="replay-scrubber"
+          type="range"
+          min={0}
+          max={events.length - 1}
+          value={cursor}
+          aria-label="回放进度"
+          onChange={(e) => {
+            stopPlay();
+            setCursor(Number(e.target.value));
+          }}
+        />
+      )}
       {graph && (
         <div className="replay-diagram">
           <div className="dg-frame">

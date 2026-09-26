@@ -14,6 +14,20 @@ type Route =
 
 export function App() {
   const [route, setRoute] = useState<Route>({ page: "learn" });
+  const [theme, setTheme] = useState<"light" | "dark">(() =>
+    document.documentElement.dataset.theme === "dark" ? "dark" : "light",
+  );
+
+  const toggleTheme = (): void => {
+    const next = theme === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    try {
+      localStorage.setItem("agentglass:theme", next);
+    } catch {
+      /* 持久化失败不影响本次会话 */
+    }
+    setTheme(next);
+  };
 
   return (
     <div className="app">
@@ -36,6 +50,13 @@ export function App() {
         ))}
         <span className="spacer" />
         <span className="muted small">本地实验版 · 单用户模式</span>
+        <button
+          className="theme-toggle"
+          title={theme === "dark" ? "切换到浅色主题" : "切换到深色主题"}
+          onClick={toggleTheme}
+        >
+          {theme === "dark" ? "☀" : "☾"}
+        </button>
       </nav>
       <main className="page">
         {route.page === "learn" && <LearnPage onOpenLesson={(lessonId) => setRoute({ page: "workbench", lessonId })} />}
