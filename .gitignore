@@ -5,6 +5,7 @@ build/
 coverage/
 *.tsbuildinfo
 .vite/
+.dist/
 
 # 运行时数据（SQLite、blob、运行工作区、代码修订）——删除即重置
 data/
