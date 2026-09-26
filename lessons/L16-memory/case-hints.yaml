@@ -1,0 +1,10 @@
+hints:
+  - id: L16-remember
+    text: 请记住：我先看结论，再看依据。
+    observe:
+      - tool.call_completed
+  - id: L16-recall
+    text: 我的输出偏好是什么？
+    observe:
+      - tool.call_completed
+      - model.response_completed

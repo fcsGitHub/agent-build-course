@@ -1,0 +1,12 @@
+# L06 编辑策略：仅开放 shouldContinue 函数体
+id: L06-edit
+lesson_version: L06@1.0.0
+regions:
+  - path: lesson-agent/loop-policy.ts
+    kind: function_body
+    symbol: shouldContinue
+    maxBytes: 4096
+allowed_imports: []
+fixed_contract_digest: dynamic
+max_changed_files: 1
+max_patch_bytes: 8192

@@ -1,0 +1,6 @@
+hints:
+  - id: L30-run
+    text: 请总结 AG-2048 的核心规格。
+    observe:
+      - agent.delegated
+      - agent.handed_off

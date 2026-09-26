@@ -1,0 +1,22 @@
+{
+  "name": "@agentglass/cli",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "agentglass": "./src/main.ts"
+  },
+  "scripts": {
+    "dev": "tsx src/main.ts",
+    "build": "esbuild src/main.ts --bundle --platform=node --format=esm --outfile=dist/main.js --external:@agentglass/*"
+  },
+  "dependencies": {
+    "@agentglass/contracts": "workspace:*",
+    "@agentglass/db": "workspace:*",
+    "@agentglass/events": "workspace:*",
+    "@agentglass/replay": "workspace:*",
+    "commander": "^14.0.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0"
+  }
+}

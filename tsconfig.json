@@ -1,0 +1,116 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@agentglass/contracts": [
+        "packages/contracts/src/index.ts"
+      ],
+      "@agentglass/contracts/*": [
+        "packages/contracts/src/*"
+      ],
+      "@agentglass/db": [
+        "packages/db/src/index.ts"
+      ],
+      "@agentglass/events": [
+        "packages/events/src/index.ts"
+      ],
+      "@agentglass/policy": [
+        "packages/policy/src/index.ts"
+      ],
+      "@agentglass/provider-gateway": [
+        "packages/provider-gateway/src/index.ts"
+      ],
+      "@agentglass/tools": [
+        "packages/tools/src/index.ts"
+      ],
+      "@agentglass/context": [
+        "packages/context/src/index.ts"
+      ],
+      "@agentglass/source-map": [
+        "packages/source-map/src/index.ts"
+      ],
+      "@agentglass/runtime-reference": [
+        "packages/runtime-reference/src/index.ts"
+      ],
+      "@agentglass/conversation": [
+        "packages/conversation/src/index.ts"
+      ],
+      "@agentglass/code-lab": [
+        "packages/code-lab/src/index.ts"
+      ],
+      "@agentglass/projections": [
+        "packages/projections/src/index.ts"
+      ],
+      "@agentglass/replay": [
+        "packages/replay/src/index.ts"
+      ],
+      "@agentglass/lessons": [
+        "packages/lessons/src/index.ts"
+      ],
+      "@agentglass/learner-runtime": [
+        "workers/learner-runtime/src/index.ts"
+      ],
+      "@agentglass/worker": [
+        "apps/worker/src/index.ts"
+      ],
+      "@agentglass/worker/*": [
+        "apps/worker/src/*"
+      ],
+      "@agentglass/api": [
+        "apps/api/src/index.ts"
+      ],
+      "@agentglass/knowledge": [
+        "packages/knowledge/src/index.ts"
+      ],
+      "@agentglass/runtime-graph": [
+        "packages/runtime-graph/src/index.ts"
+      ],
+      "@agentglass/skills": [
+        "packages/skills/src/index.ts"
+      ],
+      "@agentglass/mcp": [
+        "packages/mcp/src/index.ts"
+      ],
+      "@agentglass/harness": [
+        "packages/harness/src/index.ts"
+      ],
+      "@agentglass/multi-agent": [
+        "packages/multi-agent/src/index.ts"
+      ],
+      "@agentglass/evaluation": [
+        "packages/evaluation/src/index.ts"
+      ],
+      "@agentglass/evolution": [
+        "packages/evolution/src/index.ts"
+      ],
+      "@agentglass/a2a": [
+        "packages/a2a/src/index.ts"
+      ]
+    }
+  },
+  "include": [
+    "packages/*/src/**/*.ts",
+    "apps/api/src/**/*.ts",
+    "apps/worker/src/**/*.ts",
+    "apps/cli/src/**/*.ts",
+    "apps/web/src/**/*.ts",
+    "apps/web/src/**/*.tsx",
+    "workers/*/src/**/*.ts",
+    "scripts/**/*.ts",
+    "tests/**/*.ts",
+    "packages/runtime-graph/src/**/*.ts",
+    "packages/skills/src/**/*.ts",
+    "packages/mcp/src/**/*.ts",
+    "packages/harness/src/**/*.ts",
+    "packages/multi-agent/src/**/*.ts",
+    "packages/evaluation/src/**/*.ts",
+    "packages/evolution/src/**/*.ts",
+    "packages/a2a/src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/dist",
+    "apps/web/src/**/*.d.ts"
+  ]
+}

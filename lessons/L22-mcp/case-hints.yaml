@@ -1,0 +1,6 @@
+hints:
+  - id: L22-voltage
+    text: AG-2048 的额定电压和功率是多少？
+    observe:
+      - mcp.protocol_event
+      - tool.call_completed

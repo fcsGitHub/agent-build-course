@@ -1,0 +1,11 @@
+hints:
+  - id: L44-a
+    text: 研究问题：P-102 的年度大修是否可以延期到下一个检修窗口？请三个 worker 分别搜集证据、交叉验证、找反例。
+    observe:
+      - agent.delegated
+      - agent.result_received
+  - id: L44-b
+    text: 研究问题：手册 v2 与 FAQ 对备件安全阈值的说法是否一致？请给出三档结论分级与块 ID。
+    observe:
+      - tool.call_completed
+      - run.completed

@@ -1,0 +1,44 @@
+schema_version: 1
+id: L35-bounded-recursion
+revision: 1.0.0
+title: 外部化长输入与有界递归
+stage: "VII"
+summary: 长手册分区后递归汇总；深度上限与服务端硬上限生效；每个节点的模型调用从父预算原子预留。
+prerequisites: [L19]
+runtime:
+  adapter: reference
+  entrypoint: packages/runtime-reference/src/reference-loop.ts
+  profile: recursion
+  recursion:
+    max_depth: 3
+    partition_chars: 900
+    question: 请提取本分区中与维护相关的要点，逐条列出。
+learner_input:
+  mode: user_authored
+  default_text: ""
+  auto_send: false
+  auto_followups: false
+  case_hints: case-hints.yaml
+  hint_action: insert_into_draft
+  grade_only_matching_task_contract: true
+requires:
+  model: [streaming]
+  tools: []
+  sandbox: learner_code_isolate_with_read_only_data
+limits:
+  max_turns: 16
+  max_model_calls: 12
+  max_tool_calls: 4
+  max_wall_time_ms: 180000
+  max_concurrency: 2
+  max_depth: 3
+  max_input_tokens: 20000
+  max_output_tokens: 1500
+observations:
+  events:
+    - recursion.node_started
+    - recursion.node_completed
+    - run.completed
+assets:
+  system_prompt: prompts/system.md
+  long_input: datasets/long-manual.md

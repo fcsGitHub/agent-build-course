@@ -1,0 +1,12 @@
+hints:
+  - id: L06-missing
+    text: 请读取 missing.csv 并汇总它的内容；读不到就明确告诉我原因。
+    requires: [missing_dataset]
+    observe:
+      - tool.call_completed
+      - run.failed
+  - id: L06-loop
+    text: 请反复核对 inventory.csv 的每一行，直到你确定没有遗漏（不要编造行）。
+    requires: [dataset]
+    observe:
+      - policy.stop_decision

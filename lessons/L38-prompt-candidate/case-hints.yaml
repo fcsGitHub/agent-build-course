@@ -1,0 +1,5 @@
+hints:
+  - id: L38-a
+    text: 请说明评估提示词版本 A 与版本 B 时，为什么要用同一份冻结验证集。
+    observe:
+      - model.response_completed

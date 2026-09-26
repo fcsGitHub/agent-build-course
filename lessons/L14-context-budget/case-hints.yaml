@@ -1,0 +1,5 @@
+hints:
+  - id: L14-code
+    text: 这次资料整理的编号是 AG-2048，请记住它。
+    observe:
+      - context.compiled

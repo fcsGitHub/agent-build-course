@@ -1,0 +1,51 @@
+schema_version: 1
+id: L31-parallel-workers
+revision: 1.0.0
+title: 并行研究 worker 与预算共享
+stage: "VI"
+summary: 三个并行 worker 同时执行；模型调用从父预算原子扣减（超出者被拒绝）。
+prerequisites: [L19]
+runtime:
+  adapter: reference
+  entrypoint: packages/runtime-reference/src/reference-loop.ts
+  profile: multi_agent
+  multi_agent:
+    topology: parallel
+    workers:
+      - id: w-specs
+        goal: 列出任务涉及设备的规格要点。
+        tools: []
+      - id: w-maintenance
+        goal: 列出任务涉及的维护要点。
+        tools: []
+      - id: w-warranty
+        goal: 列出任务涉及的保修要点。
+        tools: []
+learner_input:
+  mode: user_authored
+  default_text: ""
+  auto_send: false
+  auto_followups: false
+  case_hints: case-hints.yaml
+  hint_action: insert_into_draft
+  grade_only_matching_task_contract: true
+requires:
+  model: [streaming]
+  tools: []
+  sandbox: learner_code_isolate_with_read_only_data
+limits:
+  max_turns: 6
+  max_model_calls: 6
+  max_tool_calls: 8
+  max_wall_time_ms: 180000
+  max_concurrency: 3
+  max_depth: 1
+  max_input_tokens: 20000
+  max_output_tokens: 1500
+observations:
+  events:
+    - agent.delegated
+    - agent.result_received
+    - run.completed
+assets:
+  system_prompt: prompts/system.md

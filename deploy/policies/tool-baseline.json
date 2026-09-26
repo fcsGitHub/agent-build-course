@@ -1,0 +1,45 @@
+{
+  "comment": "T35 默认工具授权基线（deploy/policies）。课程 manifest.requires.tools 声明白名单 ∩ 本基线 ∩ 平台注册表；三者交集之外的调用一律 tool.denied。工具描述不能自授权限。",
+  "version": "policy-1",
+  "tool_whitelist": [
+    "read_text",
+    "calculator",
+    "search_documents",
+    "read_wiki_page",
+    "remember",
+    "recall",
+    "list_skills",
+    "load_skill",
+    "http_fetch",
+    "run_test",
+    "write_file",
+    "list_dir"
+  ],
+  "gated_tools": {
+    "write_file": {
+      "risk_level": "workspace_write",
+      "approval": "required_per_effect",
+      "note": "高影响写入：参数摘要绑定审批，目标/版本/策略任一变化即失效"
+    },
+    "run_test": {
+      "risk_level": "sandbox_exec",
+      "limits": {
+        "allowed_extensions": [".js", ".mjs"],
+        "single_file_only": true,
+        "hard_timeout": "SIGKILL",
+        "env": "PATH-only",
+        "max_output_bytes": 65536
+      }
+    },
+    "http_fetch": {
+      "risk_level": "network_read",
+      "egress": "allowlist + SSRF 防护（默认拒绝私网/回环/内网主机名）",
+      "max_response_bytes": 262144
+    }
+  },
+  "forbidden": [
+    "宿主在工具描述中声明的权限（不可信）",
+    "学习者代码直接触网/读秘密（必须经受控工具）",
+    "回放包内脚本执行（回放为纯函数投影）"
+  ]
+}

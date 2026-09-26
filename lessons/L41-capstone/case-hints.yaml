@@ -1,0 +1,7 @@
+hints:
+  - id: L41-report
+    text: 请读取 research-notes.md 核对要点，统计库存总量并把结论文本写入 outputs/summary.md。
+    requires: [docs_research]
+    observe:
+      - approval.requested
+      - effect.succeeded

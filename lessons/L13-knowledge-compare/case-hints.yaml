@@ -1,0 +1,6 @@
+hints:
+  - id: L13-maintenance
+    text: 滤芯更换周期是多少？这条信息从哪条路径来？
+    requires: [docs_manual]
+    observe:
+      - tool.call_completed

@@ -1,0 +1,43 @@
+schema_version: 1
+id: L19
+revision: 1.0.0
+title: 计划、执行与重规划
+stage: "IV"
+summary: 用状态图执行 计划→检索→条件补查→作答；计划是数据，重规划触发可观察。
+prerequisites: [L08]
+runtime:
+  adapter: reference
+  entrypoint: packages/runtime-reference/src/reference-loop.ts
+  profile: graph
+  graph_file: graph.json
+learner_input:
+  mode: user_authored
+  default_text: ""
+  auto_send: false
+  auto_followups: false
+  case_hints: case-hints.yaml
+  hint_action: insert_into_draft
+  grade_only_matching_task_contract: true
+requires:
+  model: [streaming, native_tools]
+  tools: [search_documents]
+  sandbox: learner_code_isolate_with_read_only_data
+limits:
+  max_turns: 6
+  max_model_calls: 6
+  max_tool_calls: 6
+  max_wall_time_ms: 150000
+  max_concurrency: 2
+  max_depth: 1
+  max_input_tokens: 20000
+  max_output_tokens: 1500
+observations:
+  events:
+    - graph.node_started
+    - graph.node_completed
+    - model.response_completed
+    - run.completed
+assets:
+  system_prompt: prompts/system.md
+  docs_manual: ../../datasets/equipment/manual-v2.md
+  docs_faq: ../../datasets/equipment/faq.md

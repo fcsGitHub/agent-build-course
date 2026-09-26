@@ -1,0 +1,13 @@
+hints:
+  - id: L42-a
+    text: 请用一段话讲清 Darwin Gödel Machine 的循环，并指出它的"记忆"与普通缓存有什么不同。
+    observe:
+      - model.response_completed
+  - id: L42-b
+    text: SEAL（权重级）与 DGM（代码级）各自为什么选择那个改进对象？各自的代价是什么？
+    observe:
+      - model.response_completed
+  - id: L42-c
+    text: 上下文工程四技术分别解决什么问题？请各举一个本实验室对应的课程。
+    observe:
+      - model.response_completed

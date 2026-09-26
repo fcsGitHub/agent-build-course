@@ -1,0 +1,38 @@
+schema_version: 1
+id: L14
+revision: 1.0.0
+title: 上下文预算与排除原因
+stage: "II"
+summary: 收紧上下文预算，观察哪些历史被排除、为什么；历史存在不等于模型看到了。
+prerequisites: [L05]
+runtime:
+  adapter: reference
+  entrypoint: packages/runtime-reference/src/reference-loop.ts
+  profile: agent_loop
+learner_input:
+  mode: user_authored
+  default_text: ""
+  auto_send: false
+  auto_followups: false
+  case_hints: case-hints.yaml
+  hint_action: insert_into_draft
+  grade_only_matching_task_contract: true
+requires:
+  model: [streaming]
+  tools: []
+  sandbox: learner_code_isolate_with_read_only_data
+limits:
+  max_turns: 4
+  max_model_calls: 4
+  max_tool_calls: 0
+  max_wall_time_ms: 120000
+  max_concurrency: 1
+  max_depth: 1
+  max_input_tokens: 900
+  max_output_tokens: 600
+observations:
+  events:
+    - context.compiled
+    - model.response_completed
+assets:
+  system_prompt: prompts/system.md

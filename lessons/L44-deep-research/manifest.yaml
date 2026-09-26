@@ -1,0 +1,54 @@
+schema_version: 1
+id: L44
+revision: 1.0.0
+title: DeepResearch 式多源研究（orchestrator-worker）
+stage: "IX"
+summary: 证据搜集、交叉验证、反例检查三个研究 worker 并行检索；确定性合并引用块 ID——深研 agent 的教学骨架。
+prerequisites: [L31]
+runtime:
+  adapter: reference
+  entrypoint: packages/runtime-reference/src/reference-loop.ts
+  profile: multi_agent
+  multi_agent:
+    topology: parallel
+    workers:
+      - id: w-evidence
+        goal: 检索并列出与任务直接相关的证据（引用块 ID）。
+        tools: [search_documents]
+      - id: w-verify
+        goal: 对已提出的结论做交叉验证：检索支持与不支持的两面证据（引用块 ID）。
+        tools: [search_documents]
+      - id: w-counter
+        goal: 检索可能推翻或限制结论适用范围的反例/边界条件（引用块 ID）。
+        tools: [search_documents]
+learner_input:
+  mode: user_authored
+  default_text: ""
+  auto_send: false
+  auto_followups: false
+  case_hints: case-hints.yaml
+  hint_action: insert_into_draft
+  grade_only_matching_task_contract: true
+requires:
+  model: [streaming, native_tools]
+  tools: [search_documents]
+  sandbox: learner_code_isolate_with_read_only_data
+limits:
+  max_turns: 8
+  max_model_calls: 8
+  max_tool_calls: 12
+  max_wall_time_ms: 240000
+  max_concurrency: 3
+  max_depth: 1
+  max_input_tokens: 20000
+  max_output_tokens: 1800
+observations:
+  events:
+    - agent.delegated
+    - tool.call_completed
+    - agent.result_received
+    - run.completed
+assets:
+  system_prompt: prompts/system.md
+  docs_manual: ../../datasets/equipment/manual-v2.md
+  docs_faq: ../../datasets/equipment/faq.md

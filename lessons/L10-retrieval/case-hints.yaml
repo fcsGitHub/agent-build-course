@@ -1,0 +1,11 @@
+hints:
+  - id: L10-warranty
+    text: 保修期是多久？滤芯也在保修范围内吗？
+    requires: [docs_faq]
+    observe:
+      - tool.call_completed
+  - id: L10-noise
+    text: 机器运行时吵不吵？
+    requires: [docs_faq]
+    observe:
+      - model.response_completed

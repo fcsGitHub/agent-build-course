@@ -1,0 +1,24 @@
+# 依赖与构建产物
+node_modules/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+.vite/
+
+# 运行时数据（SQLite、blob、运行工作区、代码修订）——删除即重置
+data/
+.dev-data/
+backups/
+*.agtrace.zip
+
+# 本地环境与密钥（密钥本体永不入库，平台只存 env: 引用）
+.env
+.env.*
+
+# 工具与编辑器
+.playwright-mcp/
+.DS_Store
+Thumbs.db
+*.log
+tmp/

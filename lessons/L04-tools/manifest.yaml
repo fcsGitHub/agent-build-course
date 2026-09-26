@@ -1,0 +1,45 @@
+schema_version: 1
+id: L04
+revision: 1.0.0
+title: 工具请求与真实执行
+stage: "I"
+summary: 模型提出工具请求，宿主执行真实工具；分清"请求"与"执行"两个事件。
+prerequisites: [L00]
+runtime:
+  adapter: reference
+  entrypoint: packages/runtime-reference/src/reference-loop.ts
+  profile: agent_loop
+learner_input:
+  mode: user_authored
+  default_text: ""
+  auto_send: false
+  auto_followups: false
+  case_hints: case-hints.yaml
+  hint_action: insert_into_draft
+  grade_only_matching_task_contract: true
+requires:
+  model: [streaming, native_tools]
+  tools: [read_text, calculator]
+  sandbox: learner_code_isolate_with_read_only_data
+limits:
+  max_turns: 4
+  max_model_calls: 4
+  max_tool_calls: 6
+  max_wall_time_ms: 120000
+  max_concurrency: 2
+  max_depth: 1
+  max_input_tokens: 16000
+  max_output_tokens: 2000
+observations:
+  events:
+    - tool.proposed
+    - tool.validated
+    - tool.call_completed
+    - context.compiled
+    - model.response_completed
+assets:
+  system_prompt: prompts/system.md
+  dataset: ../../datasets/public-course/inventory.csv
+grader:
+  entrypoint: graders/inventory-result.ts
+  kind: deterministic

@@ -1,0 +1,5 @@
+hints:
+  - id: L18-load
+    text: 请加载 evidence-summary-skill 技能，然后总结 AG-2048 的保修政策。
+    observe:
+      - tool.call_completed

@@ -1,0 +1,47 @@
+# AgentGlass 本地实验版部署（docker compose）
+
+# 本地档位也可以直接 pnpm dev:api / pnpm dev:worker 运行；
+# compose 提供与设计 §20.1 一致的进程边界（app 不执行运行，worker 独立）。
+
+services:
+  app:
+    image: node:24-alpine
+    working_dir: /workspace
+    command: sh -c "corepack enable && pnpm install --frozen-lockfile && pnpm --filter @agentglass/web build && AGENTGLASS_SEED_FAKE=$${SEED_FAKE:-0} node_modules/.bin/tsx apps/api/src/server.ts"
+    environment:
+      AGENTGLASS_DATA: /workspace/data
+      AGENTGLASS_LESSONS: /workspace/lessons
+      AGENTGLASS_PORT: "8787"
+      SEED_FAKE: "1"
+    ports:
+      - "8787:8787"
+    volumes:
+      - .:/workspace
+      - app-data:/workspace/data
+    # T35 观测：组件级健康检查（db/blobs/metrics），假健康会 fail
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8787/api/v1/health').then(r=>r.json()).then(h=>{if(!h.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  worker:
+    image: node:24-alpine
+    working_dir: /workspace
+    command: sh -c "corepack enable && pnpm install --frozen-lockfile && node_modules/.bin/tsx apps/worker/src/main.ts"
+    environment:
+      AGENTGLASS_DATA: /workspace/data
+      AGENTGLASS_LESSONS: /workspace/lessons
+    volumes:
+      - .:/workspace
+      - app-data:/workspace/data
+    depends_on:
+      - app
+
+  # 说明：本地档位使用内嵌 SQLite（见 docs/adr/003），无需数据库服务。
+  # 多人课堂版在此追加 postgres（含 pgvector）与对象存储，并将
+  # packages/db 切换到 PostgreSQL 适配器（ADR-003 的升级路径）。
+
+volumes:
+  app-data:

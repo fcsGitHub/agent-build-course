@@ -1,0 +1,51 @@
+schema_version: 1
+id: L06
+revision: 1.0.0
+title: 停止条件与预算
+stage: "I"
+summary: 制造重复错误，观察停止条件与预算如何阻止失控循环。
+prerequisites: [L05]
+runtime:
+  adapter: reference
+  entrypoint: packages/runtime-reference/src/reference-loop.ts
+  profile: agent_loop
+  extension_slots:
+    loop_continue: lesson-agent/loop-policy.ts#shouldContinue
+learner_input:
+  mode: user_authored
+  default_text: ""
+  auto_send: false
+  auto_followups: false
+  case_hints: case-hints.yaml
+  hint_action: insert_into_draft
+  grade_only_matching_task_contract: true
+editing:
+  policy: edit-policy.yaml
+  scope: learner_private_variant
+  activation: next_explicit_run
+  validation_required: true
+  allow_runtime_hot_patch: false
+requires:
+  model: [streaming, native_tools]
+  tools: [read_text, calculator]
+  sandbox: learner_code_isolate_with_read_only_data
+limits:
+  max_turns: 3
+  max_model_calls: 3
+  max_tool_calls: 6
+  max_wall_time_ms: 120000
+  max_concurrency: 2
+  max_depth: 1
+  max_input_tokens: 16000
+  max_output_tokens: 1500
+observations:
+  events:
+    - policy.stop_decision
+    - tool.denied
+    - model.request_failed
+    - run.completed
+    - run.failed
+assets:
+  system_prompt: prompts/system.md
+  dataset: ../../datasets/public-course/inventory.csv
+  missing_dataset: ../../datasets/public-course/missing.csv

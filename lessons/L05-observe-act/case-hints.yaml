@@ -1,0 +1,12 @@
+hints:
+  - id: L05-inventory
+    text: 请读取实验目录中的 inventory.csv，统计各品类的库存总量，并说明你的计算依据。
+    requires: [dataset]
+    observe:
+      - policy.stop_decision
+      - tool.call_completed
+  - id: L05-one-category
+    text: 只统计其中一个我指定的品类；缺少信息时先问我，不要猜。
+    requires: [dataset]
+    observe:
+      - policy.stop_decision

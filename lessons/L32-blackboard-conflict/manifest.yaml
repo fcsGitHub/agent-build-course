@@ -1,0 +1,49 @@
+schema_version: 1
+id: L32-blackboard-conflict
+revision: 1.0.0
+title: 黑板并发写与版本冲突
+stage: "VI"
+summary: 两个 worker 并发写同一黑板键；冲突不静默覆盖，保留两版本并记录合并方式。
+prerequisites: [L19]
+runtime:
+  adapter: reference
+  entrypoint: packages/runtime-reference/src/reference-loop.ts
+  profile: multi_agent
+  multi_agent:
+    topology: blackboard
+    force_conflict_key: shared-findings
+    workers:
+      - id: worker-a
+        goal: 从你的视角总结任务要点。
+        tools: []
+      - id: worker-b
+        goal: 从你的视角总结任务要点（不同措辞）。
+        tools: []
+learner_input:
+  mode: user_authored
+  default_text: ""
+  auto_send: false
+  auto_followups: false
+  case_hints: case-hints.yaml
+  hint_action: insert_into_draft
+  grade_only_matching_task_contract: true
+requires:
+  model: [streaming]
+  tools: []
+  sandbox: learner_code_isolate_with_read_only_data
+limits:
+  max_turns: 6
+  max_model_calls: 6
+  max_tool_calls: 8
+  max_wall_time_ms: 180000
+  max_concurrency: 3
+  max_depth: 1
+  max_input_tokens: 20000
+  max_output_tokens: 1500
+observations:
+  events:
+    - agent.delegated
+    - agent.result_received
+    - run.completed
+assets:
+  system_prompt: prompts/system.md

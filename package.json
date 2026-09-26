@@ -1,0 +1,48 @@
+{
+  "name": "agentglass",
+  "private": true,
+  "version": "0.1.0",
+  "description": "AgentGlass: 可观察、可修改的 Agent 原理实验室",
+  "type": "module",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel --filter @agentglass/api --filter @agentglass/worker --filter @agentglass/web dev",
+    "dev:api": "pnpm --filter @agentglass/api dev",
+    "dev:worker": "pnpm --filter @agentglass/worker dev",
+    "dev:web": "pnpm --filter @agentglass/web dev",
+    "build": "pnpm -r build",
+    "start": "pnpm --filter @agentglass/api start",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "pnpm typecheck",
+    "test:unit": "vitest run tests/unit",
+    "test:contract": "vitest run tests/contract",
+    "test:integration": "vitest run tests/integration",
+    "test:security": "vitest run tests/security",
+    "test:fault": "vitest run tests/fault",
+    "test:e2e": "vitest run tests/e2e",
+    "test:performance": "vitest run tests/performance",
+    "test:live": "vitest run tests/live",
+    "test": "vitest run tests",
+    "verify:lessons": "tsx scripts/verify-lessons.ts",
+    "verify:source-bindings": "tsx scripts/verify-source-bindings.ts",
+    "verify:trace-bundles": "tsx scripts/verify-trace-bundles.ts",
+    "gen:lock": "tsx scripts/gen-dependency-lock.ts",
+    "backup": "tsx scripts/backup-restore-cli.ts backup",
+    "restore": "tsx scripts/backup-restore-cli.ts restore",
+    "cli": "tsx apps/cli/src/main.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.25.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0"
+  }
+}

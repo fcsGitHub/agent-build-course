@@ -1,0 +1,14 @@
+hints:
+  - id: L43-a
+    text: 请梳理维护手册中 P-102 与 P-205 的维护周期和责任方：先记录关键事实，再按需检索，最后给出对照表并引用块 ID。
+    observe:
+      - tool.call_completed
+      - context.compiled
+  - id: L43-b
+    text: 先记住任务需要的四类信息（周期/阈值/责任方/备件），然后只检索与 P-102 相关的内容，逐步补全笔记。
+    observe:
+      - tool.call_completed
+  - id: L43-c
+    text: 对比压缩（L15）与笔记+检索（本课）：在 Prompt 页签查看两次编译的消息差异。
+    observe:
+      - context.compiled

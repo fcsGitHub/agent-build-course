@@ -1,0 +1,6 @@
+hints:
+  - id: L15-warranty
+    text: 整机和滤芯的保修期分别是多久？
+    requires: [docs_faq]
+    observe:
+      - context.compiled

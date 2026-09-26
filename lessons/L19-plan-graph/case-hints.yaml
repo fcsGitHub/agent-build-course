@@ -1,0 +1,6 @@
+hints:
+  - id: L19-warranty
+    text: AG-2048 的保修政策是什么？
+    requires: [docs_manual]
+    observe:
+      - graph.node_completed

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-14T02:25:57.861Z",
+  "note": "供应链锁摘要：完整解析树以 pnpm-lock.yaml 为准；本文件记录关键工具链与合同约束（设计文档 §2.1/§20.6）。镜像与协议版本在部署时另行锁定。",
+  "toolchain": {
+    "node": "v24.11.1",
+    "pnpm": "10.29.3",
+    "typescript": "5.9.3",
+    "esbuild": "0.25.12",
+    "vitest": "3.2.7"
+  },
+  "protocolLocks": {
+    "openaiCompatWire": "openai/v1 chat completions（stream SSE）",
+    "mcp": "R1 计划；接入时锁定 spec 版本（设计核查版本 2025-11-25）",
+    "agtraceBundle": "schemaVersion 1（本仓库定义）"
+  },
+  "constraints": [
+    "拒绝浮动 git 依赖与运行镜像 latest 标签",
+    "依赖升级必须通过适配器合同测试（provider/tools/events）",
+    "许可证摘要与 SBOM 在发布前补全（T35 稳定期任务）"
+  ],
+  "directDependencies": {
+    "@types/node": {
+      "spec": "^24.0.0",
+      "resolved": "24.13.4",
+      "section": "root-dev"
+    },
+    "esbuild": {
+      "spec": "^0.25.0",
+      "resolved": "0.25.12",
+      "section": "root-dev"
+    },
+    "tsx": {
+      "spec": "^4.19.0",
+      "resolved": "4.23.13",
+      "section": "root-dev"
+    },
+    "typescript": {
+      "spec": "^5.6.0",
+      "resolved": "5.9.3",
+      "section": "root-dev"
+    },
+    "vitest": {
+      "spec": "^3.0.0",
+      "resolved": "3.2.7",
+      "section": "root-dev"
+    }
+  }
+}

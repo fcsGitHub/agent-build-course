@@ -1,0 +1,6 @@
+hints:
+  - id: L29-sum
+    text: 请读取 inventory.csv 统计库存总量并给出计算依据。
+    requires: [dataset]
+    observe:
+      - tool.call_completed

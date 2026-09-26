@@ -1,0 +1,6 @@
+hints:
+  - id: L37-filter
+    text: 滤芯更换周期是多少？请引用课程资料块 ID。
+    requires: [docs_manual]
+    observe:
+      - tool.call_completed

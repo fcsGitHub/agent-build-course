@@ -1,0 +1,40 @@
+schema_version: 1
+id: L12
+revision: 1.0.0
+title: Wiki：来源、冲突与版本
+stage: "II"
+summary: 从检索证据形成 Wiki 论断；来源版本更新时定位受影响页面并处理冲突。
+prerequisites: [L10]
+runtime:
+  adapter: reference
+  entrypoint: packages/runtime-reference/src/reference-loop.ts
+  profile: agent_loop
+learner_input:
+  mode: user_authored
+  default_text: ""
+  auto_send: false
+  auto_followups: false
+  case_hints: case-hints.yaml
+  hint_action: insert_into_draft
+  grade_only_matching_task_contract: true
+requires:
+  model: [streaming, native_tools]
+  tools: [search_documents, read_wiki_page]
+  sandbox: learner_code_isolate_with_read_only_data
+limits:
+  max_turns: 3
+  max_model_calls: 3
+  max_tool_calls: 6
+  max_wall_time_ms: 120000
+  max_concurrency: 2
+  max_depth: 1
+  max_input_tokens: 20000
+  max_output_tokens: 1500
+observations:
+  events:
+    - tool.call_completed
+    - model.response_completed
+assets:
+  system_prompt: prompts/system.md
+  docs_manual: ../../datasets/equipment/manual-v2.md
+  docs_faq: ../../datasets/equipment/faq.md

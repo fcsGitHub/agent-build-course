@@ -1,0 +1,13 @@
+hints:
+  - id: L04-inventory
+    text: 请读取实验目录中的 inventory.csv，统计所有品类的库存总量，并说明你的计算依据。
+    requires: [dataset]
+    observe:
+      - tool.proposed
+      - tool.call_completed
+      - model.response_completed
+  - id: L04-followup
+    text: 现在只统计品类名包含“传”的行，缺少信息时先问我，不要猜。
+    requires: [dataset]
+    observe:
+      - tool.call_completed

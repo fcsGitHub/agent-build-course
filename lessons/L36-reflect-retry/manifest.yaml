@@ -1,0 +1,49 @@
+schema_version: 1
+id: L36
+revision: 1.0.0
+title: 失败反思与重试来源对照
+stage: "VII"
+summary: 第一步读不存在的文件失败；失败反思（来源=tool_error）注入第二步重试读对文件。
+prerequisites: [L06]
+runtime:
+  adapter: reference
+  entrypoint: packages/runtime-reference/src/reference-loop.ts
+  profile: chain
+  reflection_on_failure: true
+  chain_steps:
+    - instruction: "读取任务指定的数据文件 missing.csv 并汇总内容。"
+      allow_tools: true
+    - instruction: "根据反思与建议，读取实际存在的数据文件并完成汇总。"
+      allow_tools: true
+    - instruction: "汇合两次尝试的差异：失败原因、反思来源、最终结果。"
+      allow_tools: false
+learner_input:
+  mode: user_authored
+  default_text: ""
+  auto_send: false
+  auto_followups: false
+  case_hints: case-hints.yaml
+  hint_action: insert_into_draft
+  grade_only_matching_task_contract: true
+requires:
+  model: [streaming, native_tools]
+  tools: [read_text]
+  sandbox: learner_code_isolate_with_read_only_data
+limits:
+  max_turns: 3
+  max_model_calls: 3
+  max_tool_calls: 4
+  max_wall_time_ms: 150000
+  max_concurrency: 1
+  max_depth: 1
+  max_input_tokens: 20000
+  max_output_tokens: 1500
+observations:
+  events:
+    - reflection.recorded
+    - tool.call_completed
+    - run.completed
+assets:
+  system_prompt: prompts/system.md
+  dataset: ../../datasets/public-course/inventory.csv
+  missing_dataset: ../../datasets/public-course/missing.csv

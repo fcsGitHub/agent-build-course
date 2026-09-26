@@ -1,0 +1,38 @@
+schema_version: 1
+id: L42
+revision: 1.0.0
+title: 前沿全景：从 Agentic RL 到 RSI（2025-2026）
+stage: "IX"
+summary: 以前沿简报为上下文，模型充当讲师回答 RSI 谱系、上下文工程、协议与评估的前沿问题；零预设对话。
+prerequisites: [L41]
+runtime:
+  adapter: reference
+  entrypoint: packages/runtime-reference/src/reference-loop.ts
+  profile: single_call
+learner_input:
+  mode: user_authored
+  default_text: ""
+  auto_send: false
+  auto_followups: false
+  case_hints: case-hints.yaml
+  hint_action: insert_into_draft
+  grade_only_matching_task_contract: true
+requires:
+  model: [streaming]
+  tools: []
+limits:
+  max_turns: 1
+  max_model_calls: 1
+  max_tool_calls: 0
+  max_wall_time_ms: 90000
+  max_concurrency: 1
+  max_depth: 1
+  max_input_tokens: 16000
+  max_output_tokens: 1500
+observations:
+  events:
+    - model.request_prepared
+    - model.response_completed
+    - run.completed
+assets:
+  system_prompt: prompts/system.md

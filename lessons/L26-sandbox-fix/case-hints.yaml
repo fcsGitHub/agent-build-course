@@ -1,0 +1,14 @@
+hints:
+  - id: L26-fix
+    text: |
+      请修复 format.js 的 bug。修复内容如下（写入 format.js）：
+      ```js
+      export function formatPrice(n) {
+        return "$" + n.toFixed(2);
+      }
+      ```
+      然后运行 format.test.js 验证。
+    requires: [project_format]
+    observe:
+      - tool.call_completed
+      - run.completed

@@ -1,0 +1,6 @@
+hints:
+  - id: L12-voltage
+    text: AG-2048 的额定电压是多少？请先查 Wiki。
+    requires: [docs_manual]
+    observe:
+      - tool.call_completed

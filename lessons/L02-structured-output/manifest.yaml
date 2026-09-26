@@ -1,0 +1,40 @@
+schema_version: 1
+id: L02
+revision: 1.0.0
+title: 结构化输出与校验
+stage: "I"
+summary: 对同一任务比较自由文本与结构化输出；看到 schema、校验错误与显式修复请求。
+prerequisites: [L00]
+runtime:
+  adapter: reference
+  entrypoint: packages/runtime-reference/src/reference-loop.ts
+  profile: single_call
+learner_input:
+  mode: user_authored
+  default_text: ""
+  auto_send: false
+  auto_followups: false
+  case_hints: case-hints.yaml
+  hint_action: insert_into_draft
+  grade_only_matching_task_contract: true
+requires:
+  model: [streaming]
+  tools: []
+limits:
+  max_turns: 1
+  max_model_calls: 2
+  max_tool_calls: 0
+  max_wall_time_ms: 60000
+  max_concurrency: 1
+  max_depth: 1
+  max_input_tokens: 8000
+  max_output_tokens: 2000
+observations:
+  events:
+    - model.response_completed
+    - run.completed
+assets:
+  system_prompt: prompts/system.md
+grader:
+  entrypoint: graders/json-shape.ts
+  kind: deterministic

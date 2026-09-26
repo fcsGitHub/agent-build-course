@@ -1,0 +1,11 @@
+{
+  "name": "@agentglass/evaluation",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "@agentglass/context": "workspace:*",
+    "@agentglass/contracts": "workspace:*"
+  }
+}

@@ -1,0 +1,9 @@
+hints:
+  - id: L03-long
+    text: 请分十条详细解释观察—行动循环的每一步，每条不少于三句话。
+    observe:
+      - model.delta_batch
+  - id: L03-cancel
+    text: 请写一篇五百字的关于工具安全的短文。
+    observe:
+      - run.cancelled

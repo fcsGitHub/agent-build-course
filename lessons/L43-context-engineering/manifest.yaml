@@ -1,0 +1,42 @@
+schema_version: 1
+id: L43
+revision: 1.0.0
+title: 上下文工程：结构化笔记与即时检索
+stage: "IX"
+summary: 上下文是会退化的有限资源；长任务先写结构化笔记（remember），细节按需即时检索（search_documents），对照 context rot。
+prerequisites: [L15, L16]
+runtime:
+  adapter: reference
+  entrypoint: packages/runtime-reference/src/reference-loop.ts
+  profile: agent_loop
+  compaction: tool_result_head
+learner_input:
+  mode: user_authored
+  default_text: ""
+  auto_send: false
+  auto_followups: false
+  case_hints: case-hints.yaml
+  hint_action: insert_into_draft
+  grade_only_matching_task_contract: true
+requires:
+  model: [streaming, native_tools]
+  tools: [search_documents, remember, recall]
+  sandbox: learner_code_isolate_with_read_only_data
+limits:
+  max_turns: 6
+  max_model_calls: 6
+  max_tool_calls: 8
+  max_wall_time_ms: 180000
+  max_concurrency: 2
+  max_depth: 1
+  max_input_tokens: 20000
+  max_output_tokens: 1500
+observations:
+  events:
+    - tool.call_completed
+    - context.compiled
+    - run.completed
+assets:
+  system_prompt: prompts/system.md
+  docs_manual: ../../datasets/equipment/manual-v2.md
+  docs_faq: ../../datasets/equipment/faq.md

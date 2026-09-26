@@ -1,0 +1,40 @@
+schema_version: 1
+id: L21
+revision: 1.0.0
+title: 写入前审批与失效
+stage: "IV"
+summary: 写入共享成果目录前暂停等待审批；参数/目标变化使旧审批失效。
+prerequisites: [L19]
+runtime:
+  adapter: reference
+  entrypoint: packages/runtime-reference/src/reference-loop.ts
+  profile: agent_loop
+learner_input:
+  mode: user_authored
+  default_text: ""
+  auto_send: false
+  auto_followups: false
+  case_hints: case-hints.yaml
+  hint_action: insert_into_draft
+  grade_only_matching_task_contract: true
+requires:
+  model: [streaming, native_tools]
+  tools: [write_file]
+  sandbox: learner_code_isolate_with_read_only_data
+limits:
+  max_turns: 4
+  max_model_calls: 4
+  max_tool_calls: 6
+  max_wall_time_ms: 300000
+  max_concurrency: 1
+  max_depth: 1
+  max_input_tokens: 12000
+  max_output_tokens: 1200
+observations:
+  events:
+    - approval.requested
+    - approval.granted
+    - approval.rejected
+    - tool.call_completed
+assets:
+  system_prompt: prompts/system.md

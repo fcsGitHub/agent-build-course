@@ -1,0 +1,12 @@
+hints:
+  - id: L08-noise
+    text: AG-2048 的睡眠模式噪声是多少分贝？适用面积多大？
+    requires: [docs_manual]
+    observe:
+      - context.compiled
+      - tool.call_completed
+  - id: L08-loop-compare
+    text: 把同样的问题到 L05 再跑一次，比较调用次数与停止原因。
+    requires: [docs_manual]
+    observe:
+      - run.completed

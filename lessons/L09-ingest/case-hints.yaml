@@ -1,0 +1,11 @@
+hints:
+  - id: L09-noise
+    text: AG-2048 的标准模式噪声是多少？
+    requires: [docs_manual]
+    observe:
+      - tool.call_completed
+  - id: L09-warranty
+    text: 滤芯的保修期是多久？
+    requires: [docs_manual]
+    observe:
+      - tool.proposed

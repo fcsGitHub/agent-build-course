@@ -1,0 +1,6 @@
+hints:
+  - id: L40-flow
+    text: 请读取 training-data-flow.md 并解释为什么模拟运行不能进入训练集。
+    requires: [data_flow]
+    observe:
+      - model.response_completed

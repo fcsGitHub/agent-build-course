@@ -1,0 +1,11 @@
+# L01 编辑策略：开放课程 Prompt 整体替换（平台规则行除外）
+id: L01-edit
+lesson_version: L01@1.0.0
+regions:
+  - path: prompts/system.md
+    kind: whole_file
+    maxBytes: 4096
+allowed_imports: []
+fixed_contract_digest: dynamic
+max_changed_files: 1
+max_patch_bytes: 8192

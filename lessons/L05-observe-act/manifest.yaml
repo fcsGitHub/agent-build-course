@@ -1,0 +1,56 @@
+schema_version: 1
+id: L05
+revision: 1.1.0
+title: 观察与行动循环
+stage: "I"
+summary: 实现最小观察—行动循环；修改开放的 shouldContinue，用真实运行验证差异。
+prerequisites: [L04]
+runtime:
+  adapter: reference
+  entrypoint: packages/runtime-reference/src/reference-loop.ts
+  profile: agent_loop
+  extension_slots:
+    loop_continue: lesson-agent/loop-policy.ts#shouldContinue
+learner_input:
+  mode: user_authored
+  default_text: ""
+  auto_send: false
+  auto_followups: false
+  case_hints: case-hints.yaml
+  hint_action: insert_into_draft
+  grade_only_matching_task_contract: true
+editing:
+  policy: edit-policy.yaml
+  scope: learner_private_variant
+  activation: next_explicit_run
+  validation_required: true
+  allow_runtime_hot_patch: false
+requires:
+  model: [streaming, native_tools]
+  tools: [read_text, calculator]
+  sandbox: learner_code_isolate_with_read_only_data
+limits:
+  max_turns: 6
+  max_model_calls: 6
+  max_tool_calls: 8
+  max_wall_time_ms: 180000
+  max_concurrency: 2
+  max_depth: 1
+  max_input_tokens: 16000
+  max_output_tokens: 2000
+observations:
+  events:
+    - context.compiled
+    - model.response_completed
+    - tool.proposed
+    - tool.call_completed
+    - policy.stop_decision
+    - checkpoint.committed
+assets:
+  dataset: ../../datasets/public-course/inventory.csv
+  system_prompt: prompts/system.md
+grader:
+  entrypoint: graders/inventory-result.ts
+  kind: deterministic
+source_policy:
+  bind_to_build_manifest: true

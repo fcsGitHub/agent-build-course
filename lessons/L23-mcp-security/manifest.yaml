@@ -1,0 +1,40 @@
+schema_version: 1
+id: L23
+revision: 1.0.0
+title: 工具描述不可信（注入防护演示）
+stage: "V"
+summary: 课程 MCP server 的工具描述内嵌注入文本；宿主白名单与参数校验不受影响。
+prerequisites: [L22]
+runtime:
+  adapter: reference
+  entrypoint: packages/runtime-reference/src/reference-loop.ts
+  profile: agent_loop
+  mcp_servers: [course]
+learner_input:
+  mode: user_authored
+  default_text: ""
+  auto_send: false
+  auto_followups: false
+  case_hints: case-hints.yaml
+  hint_action: insert_into_draft
+  grade_only_matching_task_contract: true
+requires:
+  model: [streaming, native_tools]
+  tools: [mcp_course_device_specs]
+  sandbox: learner_code_isolate_with_read_only_data
+limits:
+  max_turns: 3
+  max_model_calls: 3
+  max_tool_calls: 4
+  max_wall_time_ms: 120000
+  max_concurrency: 1
+  max_depth: 1
+  max_input_tokens: 16000
+  max_output_tokens: 1200
+observations:
+  events:
+    - tool.proposed
+    - tool.call_completed
+    - model.response_completed
+assets:
+  system_prompt: prompts/system.md

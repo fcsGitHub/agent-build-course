@@ -1,0 +1,40 @@
+schema_version: 1
+id: L25
+revision: 1.0.0
+title: CLI 与 Web 是同一系统
+stage: "V"
+summary: 同一课程分别从 CLI 与 Web 发起；共享 run 合同、同一事件账本与状态。
+prerequisites: [L05]
+runtime:
+  adapter: reference
+  entrypoint: packages/runtime-reference/src/reference-loop.ts
+  profile: agent_loop
+learner_input:
+  mode: user_authored
+  default_text: ""
+  auto_send: false
+  auto_followups: false
+  case_hints: case-hints.yaml
+  hint_action: insert_into_draft
+  grade_only_matching_task_contract: true
+requires:
+  model: [streaming, native_tools]
+  tools: [read_text, calculator]
+  sandbox: learner_code_isolate_with_read_only_data
+limits:
+  max_turns: 3
+  max_model_calls: 3
+  max_tool_calls: 6
+  max_wall_time_ms: 120000
+  max_concurrency: 1
+  max_depth: 1
+  max_input_tokens: 16000
+  max_output_tokens: 1500
+observations:
+  events:
+    - run.started
+    - model.response_completed
+    - run.completed
+assets:
+  system_prompt: prompts/system.md
+  dataset: ../../datasets/public-course/inventory.csv

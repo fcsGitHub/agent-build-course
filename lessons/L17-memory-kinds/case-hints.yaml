@@ -1,0 +1,5 @@
+hints:
+  - id: L17-episodic
+    text: 请记住（情节）：我今天整理了 AG-2048 的资料。
+    observe:
+      - tool.call_completed

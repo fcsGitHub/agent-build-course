@@ -1,0 +1,10 @@
+hints:
+  - id: L00-introduce
+    text: 请用两句话介绍你自己是如何生成回答的，并说明你的局限。
+    observe:
+      - model.request_prepared
+      - model.response_completed
+  - id: L00-failure
+    text: 请故意问一个你无法回答的问题，观察系统如何记录失败或拒绝。
+    observe:
+      - model.request_failed

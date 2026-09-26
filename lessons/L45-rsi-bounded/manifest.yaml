@@ -1,0 +1,46 @@
+schema_version: 1
+id: L45
+revision: 1.0.0
+title: 有界 RSI 循环（DGM 教学骨架）
+stage: "IX"
+summary: 生成器×对象×评估器×记忆四要素的提示级自改进循环；冻结集同一把尺子，严格改进才晋级，被拒变体入档保留。
+prerequisites: [L38, L40]
+runtime:
+  adapter: reference
+  entrypoint: packages/runtime-reference/src/rsi-loop.ts
+  profile: rsi
+  rsi:
+    max_generations: 2
+    frozen_tasks: rsi_frozen
+learner_input:
+  mode: user_authored
+  default_text: ""
+  auto_send: false
+  auto_followups: false
+  case_hints: case-hints.yaml
+  hint_action: insert_into_draft
+  grade_only_matching_task_contract: true
+requires:
+  model: [streaming]
+  tools: []
+  sandbox: learner_code_isolate_with_read_only_data
+limits:
+  max_turns: 8
+  max_model_calls: 10
+  max_tool_calls: 0
+  max_wall_time_ms: 240000
+  max_concurrency: 1
+  max_depth: 1
+  max_input_tokens: 20000
+  max_output_tokens: 1500
+observations:
+  events:
+    - rsi.generation_started
+    - candidate.evaluated
+    - candidate.promoted
+    - candidate.rejected
+    - rsi.generation_completed
+    - run.completed
+assets:
+  system_prompt: prompts/system.md
+  rsi_frozen: datasets/frozen-tasks.json

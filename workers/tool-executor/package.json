@@ -1,0 +1,16 @@
+{
+  "name": "@agentglass/tool-executor",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/server.ts",
+  "scripts": {
+    "dev": "tsx src/server.ts"
+  },
+  "dependencies": {
+    "@agentglass/contracts": "workspace:*",
+    "@agentglass/tools": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0"
+  }
+}

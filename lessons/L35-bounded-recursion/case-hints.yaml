@@ -1,0 +1,7 @@
+hints:
+  - id: L35-run
+    text: 请对 long-manual.md 执行有界递归汇总，提取全部维护要点。
+    requires: [long_input]
+    observe:
+      - recursion.node_started
+      - recursion.node_completed

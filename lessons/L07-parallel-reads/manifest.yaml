@@ -1,0 +1,45 @@
+schema_version: 1
+id: L07
+revision: 1.0.0
+title: 串行与并行工具调用
+stage: "I"
+summary: 同一任务请求多个文件读取；比较请求顺序、完成顺序与结果入上下文顺序。
+prerequisites: [L04]
+runtime:
+  adapter: reference
+  entrypoint: packages/runtime-reference/src/reference-loop.ts
+  profile: agent_loop
+learner_input:
+  mode: user_authored
+  default_text: ""
+  auto_send: false
+  auto_followups: false
+  case_hints: case-hints.yaml
+  hint_action: insert_into_draft
+  grade_only_matching_task_contract: true
+requires:
+  model: [streaming, native_tools]
+  tools: [read_text, calculator]
+  sandbox: learner_code_isolate_with_read_only_data
+limits:
+  max_turns: 4
+  max_model_calls: 4
+  max_tool_calls: 8
+  max_wall_time_ms: 180000
+  max_concurrency: 3
+  max_depth: 1
+  max_input_tokens: 20000
+  max_output_tokens: 2000
+observations:
+  events:
+    - tool.proposed
+    - tool.call_completed
+    - context.compiled
+assets:
+  system_prompt: prompts/system.md
+  sales_q1: ../../datasets/public-course/sales-q1.csv
+  sales_q2: ../../datasets/public-course/sales-q2.csv
+  inventory: ../../datasets/public-course/inventory.csv
+grader:
+  entrypoint: graders/sum-check.ts
+  kind: deterministic

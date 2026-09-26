@@ -1,0 +1,60 @@
+{
+  "id": "L20-branch",
+  "revision": "1.0.0",
+  "entryNodeId": "classify",
+  "exitNodeIds": [
+    "answer"
+  ],
+  "reducerId": "graph-state-v1",
+  "maxNodeVisits": 2,
+  "maxTotalExecutions": 10,
+  "nodes": [
+    {
+      "id": "classify",
+      "kind": "model",
+      "handlerId": "判断任务需要的证据类别（参数/维护/保修/其他），一句话输出。"
+    },
+    {
+      "id": "gather",
+      "kind": "tool",
+      "handlerId": "search_documents",
+      "argsTemplate": {
+        "query": "{{task}}"
+      }
+    },
+    {
+      "id": "gate",
+      "kind": "transform",
+      "handlerId": "evidence-summary"
+    },
+    {
+      "id": "answer",
+      "kind": "model",
+      "handlerId": "汇合证据作答，引用块 ID。"
+    }
+  ],
+  "edges": [
+    {
+      "from": "classify",
+      "to": "gather"
+    },
+    {
+      "from": "gather",
+      "to": "gate"
+    },
+    {
+      "from": "gate",
+      "to": "answer",
+      "predicateId": "evidence_sufficient"
+    },
+    {
+      "from": "gate",
+      "to": "gather",
+      "predicateId": "visits_under_limit"
+    },
+    {
+      "from": "gate",
+      "to": "answer"
+    }
+  ]
+}

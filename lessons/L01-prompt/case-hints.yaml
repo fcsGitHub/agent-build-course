@@ -1,0 +1,10 @@
+hints:
+  - id: L01-style
+    text: 请用一句话解释什么是 Agent。回答必须以“定义：”开头。
+    observe:
+      - context.compiled
+  - id: L01-observe
+    text: 请复述你收到的系统规则（只复述，不执行）。
+    observe:
+      - context.compiled
+      - model.response_completed

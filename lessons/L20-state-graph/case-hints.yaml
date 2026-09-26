@@ -1,0 +1,6 @@
+hints:
+  - id: L20-warranty
+    text: 整机保修和滤芯保修分别多久？
+    requires: [docs_faq]
+    observe:
+      - graph.node_completed

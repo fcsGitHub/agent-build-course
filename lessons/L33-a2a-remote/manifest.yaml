@@ -1,0 +1,40 @@
+schema_version: 1
+id: L33-a2a-remote
+revision: 1.0.0
+title: 通过 A2A 调用远程教学 Agent
+stage: "VI"
+summary: 把任务委派给远程 Agent（agent card / message/send / artifact），并审查其结果为待验证信息。
+prerequisites: [L10]
+runtime:
+  adapter: reference
+  entrypoint: packages/runtime-reference/src/reference-loop.ts
+  profile: agent_loop
+  a2a_agents: [research]
+learner_input:
+  mode: user_authored
+  default_text: ""
+  auto_send: false
+  auto_followups: false
+  case_hints: case-hints.yaml
+  hint_action: insert_into_draft
+  grade_only_matching_task_contract: true
+requires:
+  model: [streaming, native_tools]
+  tools: [a2a_research]
+  sandbox: learner_code_isolate_with_read_only_data
+limits:
+  max_turns: 4
+  max_model_calls: 4
+  max_tool_calls: 4
+  max_wall_time_ms: 120000
+  max_concurrency: 1
+  max_depth: 1
+  max_input_tokens: 16000
+  max_output_tokens: 1200
+observations:
+  events:
+    - a2a.agent_connected
+    - tool.call_completed
+    - run.completed
+assets:
+  system_prompt: prompts/system.md

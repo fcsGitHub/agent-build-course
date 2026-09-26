@@ -1,0 +1,12 @@
+hints:
+  - id: L07-two-files
+    text: 请同时读取 sales-q1.csv 和 sales-q2.csv，计算两个季度所有区域的总销量。
+    requires: [sales_q1]
+    observe:
+      - tool.proposed
+      - tool.call_completed
+  - id: L07-compare
+    text: 哪个季度北区销量更高？请给出两个数字与差值。
+    requires: [sales_q1]
+    observe:
+      - model.response_completed

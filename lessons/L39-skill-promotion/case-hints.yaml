@@ -1,0 +1,5 @@
+hints:
+  - id: L39-load
+    text: 请加载 evidence-summary-skill 并说明它当前的版本与规则。
+    observe:
+      - skill.loaded

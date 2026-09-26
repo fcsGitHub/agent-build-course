@@ -1,0 +1,12 @@
+{
+  "name": "@agentglass/a2a",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "@agentglass/contracts": "workspace:*",
+    "@agentglass/mcp": "workspace:*",
+    "@agentglass/tools": "workspace:*"
+  }
+}

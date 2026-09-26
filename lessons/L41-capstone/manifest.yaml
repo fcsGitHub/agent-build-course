@@ -1,0 +1,41 @@
+schema_version: 1
+id: L41-capstone
+revision: 1.0.0
+title: 毕业实验：带证据的研究与文档 Agent
+stage: "VIII"
+summary: 综合检索、引用、计算与审批写入；高影响写入驻留审批；运行可导出回放。
+prerequisites: [L37, L39]
+runtime:
+  adapter: reference
+  entrypoint: packages/runtime-reference/src/reference-loop.ts
+  profile: agent_loop
+learner_input:
+  mode: user_authored
+  default_text: ""
+  auto_send: false
+  auto_followups: false
+  case_hints: case-hints.yaml
+  hint_action: insert_into_draft
+  grade_only_matching_task_contract: true
+requires:
+  model: [streaming, native_tools]
+  tools: [read_text, calculator, write_file]
+  sandbox: learner_code_isolate_with_read_only_data
+limits:
+  max_turns: 6
+  max_model_calls: 6
+  max_tool_calls: 8
+  max_wall_time_ms: 180000
+  max_concurrency: 1
+  max_depth: 1
+  max_input_tokens: 20000
+  max_output_tokens: 1500
+observations:
+  events:
+    - tool.call_completed
+    - approval.requested
+    - effect.succeeded
+    - run.completed
+assets:
+  system_prompt: prompts/system.md
+  docs_research: datasets/research-notes.md

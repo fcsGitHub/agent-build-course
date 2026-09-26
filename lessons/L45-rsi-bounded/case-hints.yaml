@@ -1,0 +1,16 @@
+hints:
+  - id: L45-a
+    text: 改进目标：让 worker 在总结类任务中总是显式复述关键数字与关键词（如「季度」「密封」「42」「充足」）。
+    observe:
+      - rsi.generation_started
+      - candidate.evaluated
+  - id: L45-b
+    text: 改进目标：要求 worker 回答前先在内部列出任务要求的必含词，再组织一句话作答。
+    observe:
+      - candidate.promoted
+      - rsi.generation_completed
+  - id: L45-c
+    text: 请对比两代的冻结集得分与归档大小，说明为什么被拒变体也要保留（垫脚石 vs 爬山）。
+    observe:
+      - candidate.rejected
+      - run.completed

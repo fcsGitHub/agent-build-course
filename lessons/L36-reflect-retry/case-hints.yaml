@@ -1,0 +1,7 @@
+hints:
+  - id: L36-run
+    text: 请读取 missing.csv 并汇总内容；读不到就告诉我原因。
+    requires: [missing_dataset]
+    observe:
+      - reflection.recorded
+      - tool.call_completed

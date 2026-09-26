@@ -1,0 +1,46 @@
+{
+  "id": "L19-plan",
+  "revision": "1.0.0",
+  "entryNodeId": "plan",
+  "exitNodeIds": [
+    "answer"
+  ],
+  "reducerId": "graph-state-v1",
+  "maxNodeVisits": 2,
+  "maxTotalExecutions": 8,
+  "nodes": [
+    {
+      "id": "plan",
+      "kind": "model",
+      "handlerId": "为该任务制定不超过三步的计划，输出编号列表。"
+    },
+    {
+      "id": "search",
+      "kind": "tool",
+      "handlerId": "search_documents",
+      "argsTemplate": {
+        "query": "{{task}}"
+      }
+    },
+    {
+      "id": "answer",
+      "kind": "model",
+      "handlerId": "汇合检索证据，给出最终回答并引用块 ID。"
+    }
+  ],
+  "edges": [
+    {
+      "from": "plan",
+      "to": "search"
+    },
+    {
+      "from": "search",
+      "to": "answer",
+      "predicateId": "evidence_sufficient"
+    },
+    {
+      "from": "search",
+      "to": "answer"
+    }
+  ]
+}

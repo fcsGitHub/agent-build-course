@@ -1,0 +1,38 @@
+schema_version: 1
+id: L16
+revision: 1.0.0
+title: 长期记忆的写入与遗忘
+stage: "II"
+summary: 写入用户偏好，跨轮读取，再删除并验证传播；记忆有作用域与生命周期。
+prerequisites: [L05]
+runtime:
+  adapter: reference
+  entrypoint: packages/runtime-reference/src/reference-loop.ts
+  profile: agent_loop
+learner_input:
+  mode: user_authored
+  default_text: ""
+  auto_send: false
+  auto_followups: false
+  case_hints: case-hints.yaml
+  hint_action: insert_into_draft
+  grade_only_matching_task_contract: true
+requires:
+  model: [streaming, native_tools]
+  tools: [remember, recall]
+  sandbox: learner_code_isolate_with_read_only_data
+limits:
+  max_turns: 3
+  max_model_calls: 3
+  max_tool_calls: 4
+  max_wall_time_ms: 120000
+  max_concurrency: 1
+  max_depth: 1
+  max_input_tokens: 12000
+  max_output_tokens: 1200
+observations:
+  events:
+    - tool.call_completed
+    - model.response_completed
+assets:
+  system_prompt: prompts/system.md

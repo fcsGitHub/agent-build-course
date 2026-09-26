@@ -1,0 +1,6 @@
+hints:
+  - id: L24-annotate
+    text: 请用一句话解释什么是 hook。
+    observe:
+      - hook.diff
+      - task.progress_updated

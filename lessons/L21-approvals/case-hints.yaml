@@ -1,0 +1,6 @@
+hints:
+  - id: L21-write
+    text: 请把本次整理结论写入 outputs/report.md。
+    observe:
+      - approval.requested
+      - tool.call_completed

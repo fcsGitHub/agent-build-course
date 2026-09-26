@@ -1,0 +1,6 @@
+hints:
+  - id: L31-run
+    text: 请全面整理 AG-2048 的规格、维护与保修要点。
+    observe:
+      - agent.delegated
+      - agent.result_received

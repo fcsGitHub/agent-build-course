@@ -1,0 +1,15 @@
+{
+  "name": "@agentglass/runtime-reference",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "@agentglass/contracts": "workspace:*",
+    "@agentglass/context": "workspace:*",
+    "@agentglass/events": "workspace:*",
+    "@agentglass/policy": "workspace:*",
+    "@agentglass/provider-gateway": "workspace:*",
+    "@agentglass/tools": "workspace:*"
+  }
+}

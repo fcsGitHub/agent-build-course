@@ -1,0 +1,6 @@
+hints:
+  - id: L33-delegate
+    text: 请委派远程 Agent 总结 AG-2048 的核心规格，并说明该结果的验证状态。
+    observe:
+      - a2a.agent_connected
+      - tool.call_completed

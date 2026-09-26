@@ -1,0 +1,40 @@
+schema_version: 1
+id: L34-architecture-compare
+revision: 1.0.0
+title: 同预算架构对照实验
+stage: "VI"
+summary: 用同一任务与同一预算在单 Agent、工作流链、状态图、多 Agent 四种架构下运行，对照结果/费用/延迟/失败模式。
+prerequisites: [L31]
+runtime:
+  adapter: reference
+  entrypoint: packages/runtime-reference/src/reference-loop.ts
+  profile: agent_loop
+learner_input:
+  mode: user_authored
+  default_text: ""
+  auto_send: false
+  auto_followups: false
+  case_hints: case-hints.yaml
+  hint_action: insert_into_draft
+  grade_only_matching_task_contract: true
+requires:
+  model: [streaming, native_tools]
+  tools: [read_text]
+  sandbox: learner_code_isolate_with_read_only_data
+limits:
+  max_turns: 4
+  max_model_calls: 4
+  max_tool_calls: 4
+  max_wall_time_ms: 120000
+  max_concurrency: 1
+  max_depth: 1
+  max_input_tokens: 16000
+  max_output_tokens: 1200
+observations:
+  events:
+    - model.response_completed
+    - policy.stop_decision
+    - run.completed
+assets:
+  system_prompt: prompts/system.md
+  task_sheet: datasets/compare-task.md

@@ -1,0 +1,5 @@
+hints:
+  - id: L32-run
+    text: 请两位 worker 分别总结 AG-2048 的要点并写入黑板。
+    observe:
+      - agent.result_received

@@ -1,0 +1,49 @@
+schema_version: 1
+id: L00
+revision: 1.0.0
+title: 第一次真实模型调用
+stage: "I"
+summary: 配置一个模型端点，发送真实请求，看到请求、响应、用量和错误证据。
+prerequisites: []
+runtime:
+  adapter: reference
+  entrypoint: packages/runtime-reference/src/reference-loop.ts
+  profile: single_call
+learner_input:
+  mode: user_authored
+  default_text: ""
+  auto_send: false
+  auto_followups: false
+  case_hints: case-hints.yaml
+  hint_action: insert_into_draft
+  grade_only_matching_task_contract: true
+requires:
+  model: [streaming]
+  tools: []
+limits:
+  max_turns: 1
+  max_model_calls: 1
+  max_tool_calls: 0
+  max_wall_time_ms: 60000
+  max_concurrency: 1
+  max_depth: 1
+  max_input_tokens: 8000
+  max_output_tokens: 2000
+observations:
+  events:
+    - run.created
+    - input.accepted
+    - context.compiled
+    - model.request_prepared
+    - model.request_dispatched
+    - model.response_completed
+    - run.completed
+assets:
+  system_prompt: prompts/system.md
+grader:
+  entrypoint: graders/final-answer-nonempty.ts
+  kind: deterministic
+source_policy:
+  bind_to_build_manifest: true
+history_policy:
+  allow_only_verified_real_runs: true

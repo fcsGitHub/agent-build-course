@@ -1,0 +1,17 @@
+{
+  "name": "@agentglass/learner-runtime",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "tsx src/guest.ts"
+  },
+  "dependencies": {
+    "@agentglass/contracts": "workspace:*",
+    "@agentglass/runtime-reference": "workspace:*",
+    "esbuild": "^0.25.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0"
+  }
+}

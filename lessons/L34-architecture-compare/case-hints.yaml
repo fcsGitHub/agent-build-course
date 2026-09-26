@@ -1,0 +1,7 @@
+hints:
+  - id: L34-loop
+    text: 请读取 compare-task.md 并完成其中任务。
+    requires: [task_sheet]
+    observe:
+      - model.response_completed
+      - run.completed

@@ -1,0 +1,47 @@
+schema_version: 1
+id: L13
+revision: 1.0.0
+title: 向量检索 vs Wiki 导航
+stage: "II"
+summary: 同一问题分别用向量检索与 Wiki 已发布知识回答；比较路径、成本与可维护性。
+prerequisites: [L12]
+runtime:
+  adapter: reference
+  entrypoint: packages/runtime-reference/src/reference-loop.ts
+  profile: chain
+  chain_steps:
+    - instruction: "先判断这个问题适合检索资料还是查 Wiki，并说明理由。"
+      allow_tools: false
+    - instruction: "按你的判断执行检索或查 Wiki，收集证据。"
+      allow_tools: true
+    - instruction: "给出最终回答，说明证据路径（检索命中 or Wiki 页面）。"
+      allow_tools: true
+learner_input:
+  mode: user_authored
+  default_text: ""
+  auto_send: false
+  auto_followups: false
+  case_hints: case-hints.yaml
+  hint_action: insert_into_draft
+  grade_only_matching_task_contract: true
+requires:
+  model: [streaming, native_tools]
+  tools: [search_documents, read_wiki_page]
+  sandbox: learner_code_isolate_with_read_only_data
+limits:
+  max_turns: 3
+  max_model_calls: 3
+  max_tool_calls: 6
+  max_wall_time_ms: 120000
+  max_concurrency: 2
+  max_depth: 1
+  max_input_tokens: 20000
+  max_output_tokens: 1500
+observations:
+  events:
+    - tool.call_completed
+    - model.response_completed
+assets:
+  system_prompt: prompts/system.md
+  docs_manual: ../../datasets/equipment/manual-v2.md
+  docs_faq: ../../datasets/equipment/faq.md

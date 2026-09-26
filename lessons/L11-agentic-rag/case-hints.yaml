@@ -1,0 +1,12 @@
+hints:
+  - id: L11-filter
+    text: 滤芯多久换一次？粉尘大的环境呢？
+    requires: [docs_manual]
+    observe:
+      - tool.call_completed
+      - policy.stop_decision
+  - id: L11-voltage
+    text: AG-2048 的额定电压到底是 12V 还是 24V？
+    requires: [docs_faq]
+    observe:
+      - model.response_completed

@@ -1,0 +1,9 @@
+hints:
+  - id: L02-json
+    text: 请输出 JSON：{"物品": "示例", "数量": 1} 的三个变体，只输出 JSON 数组。
+    observe:
+      - model.response_completed
+  - id: L02-bad
+    text: 请输出一个 JSON，但故意缺少“数量”字段，观察系统校验错误如何展示。
+    observe:
+      - model.request_failed

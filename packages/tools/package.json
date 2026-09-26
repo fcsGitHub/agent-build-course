@@ -1,0 +1,14 @@
+{
+  "name": "@agentglass/tools",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "@agentglass/contracts": "workspace:*",
+    "@agentglass/db": "workspace:*",
+    "@agentglass/events": "workspace:*",
+    "@agentglass/knowledge": "workspace:*",
+    "@agentglass/skills": "workspace:*"
+  }
+}
