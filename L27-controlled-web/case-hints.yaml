@@ -1,5 +1,0 @@
-hints:
-  - id: L27-fetch
-    text: 请读取 https://example.com 页面内容并总结。
-    observe:
-      - tool.call_completed

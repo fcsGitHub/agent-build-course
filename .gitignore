@@ -7,6 +7,11 @@ coverage/
 .vite/
 .dist/
 
+# 打包/安装包产物（pnpm pack、本地包仓库）不入库
+*.tgz
+*.tar.gz
+.pnpm-store/
+
 # 运行时数据（SQLite、blob、运行工作区、代码修订）——删除即重置
 data/
 .dev-data/
