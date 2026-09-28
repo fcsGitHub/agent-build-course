@@ -12,6 +12,9 @@ data/
 .dev-data/
 backups/
 *.agtrace.zip
+*.sqlite
+*.sqlite3
+*.db
 
 # 本地环境与密钥（密钥本体永不入库，平台只存 env: 引用）
 .env
@@ -19,6 +22,10 @@ backups/
 
 # 工具与编辑器
 .playwright-mcp/
+.vscode/
+.idea/
+.claude/
+.zcode/
 .DS_Store
 Thumbs.db
 *.log
